@@ -1,105 +1,122 @@
 # AWS SAM Rules
 
 ## 目的
-本プロジェクトは AWS SAM を用いたサーバーレスアプリケーションとして実装する。
-AWS Well-Architected Framework（特に Serverless Best Practices）に準拠することを目的とする。
+
+本プロジェクトは AWS SAM を用いたサーバーレスバックエンドとして実装する。
+PoC / MVP フェーズでは **工数最小・低コスト・構成単純化** を最優先としつつ、
+AWS Well-Architected Framework（特に Serverless Best Practices）に**過剰適用しない範囲で**準拠することを目的とする。
 
 ---
 
 ## インフラ構成の原則
 
-- インフラ管理は **AWS SAM のみ** を使用する
-- 手動での AWS コンソール操作を前提とした設計は禁止
-- CloudFormation / SAM で再現可能であることを必須とする
+* **可用性・スケーラビリティ・マルチリージョンは考慮しない（PoC前提）**
+* すべてのバックエンドリソースは **AWS SAM で管理** する
+* 手動構築は禁止（AWS Console 操作は原則不可）
+* 構成は「理解しやすさ・壊しやすさ」を優先する
+* 本番相当環境は 1 環境のみとする
 
 ---
 
 ## 使用を許可する AWS サービス
 
-- AWS Lambda
-- Amazon API Gateway
-- Amazon DynamoDB
-- Amazon S3
-- Amazon CloudFront
-- Amazon CloudWatch
+* AWS Lambda
+* Amazon API Gateway
+* Amazon DynamoDB
+* Amazon CloudWatch
+* AWS Amplify Hosting（※ フロントエンド専用）
+* Amazon CloudFront（Amplify が内部利用する範囲のみ）
 
 ---
 
 ## 使用を禁止する AWS サービス
 
-- EC2
-- ECS / EKS
-- RDS / Aurora
-- Elastic Beanstalk
-- App Runner
-- Step Functions（MVPでは使用しない）
-- Cognito（MVPでは使用しない）
+* EC2
+* ECS / EKS
+* RDS / Aurora
+* Elastic Beanstalk
+* App Runner
+* Step Functions（MVPでは使用しない）
+* Cognito（MVPでは使用しない）
+* SQS / SNS（MVPでは使用しない）
 
 ---
 
 ## Lambda に関するルール
 
-- Lambda は **Stateless** とする
-- セッション管理は禁止
-- ファイルの永続化は禁止（/tmp を含む）
-- 1 Lambda に 1 つの責務を持たせる
-- ビジネスロジックのみを実装する
-- 環境依存の値は Environment Variables で管理する
+* Lambda は **Stateless** とする
+* セッション管理は禁止
+* ファイルの永続化は禁止（`/tmp` を含む）
+* 1 Lambda に 1 つの責務を持たせる
+* ビジネスロジックのみを実装する
+* インフラ制御・AWS SDK 操作は最小限にする
+* 環境依存の値は Environment Variables で管理する
+* 処理時間は数秒以内を前提とする
 
 ---
 
 ## API Gateway に関するルール
 
-- REST API もしくは HTTP API を使用する
-- 認証は MVP では実装しない
-- API は JSON のみを扱う
+* REST API または HTTP API を使用する
+* MVP フェーズでは **認証・認可は実装しない**
+* API は JSON のみを扱う
+* フロントエンドから直接呼ばれる API のみを公開する
+* API 設計はフロントエンド都合を優先する（過度な汎用化は禁止）
 
 ---
 
 ## DynamoDB に関するルール
 
-- DynamoDB はマネージドデータストアとして使用する
-- 単一テーブル設計を基本とする
-- Scan を前提とした設計は禁止
-- パーティションキー / ソートキーの設計を明示すること
-- MVP では強い整合性やトランザクションは使用しない
+* DynamoDB はマネージドデータストアとして使用する
+* **単一テーブル設計を基本** とする
+* Scan を前提とした設計は禁止
+* パーティションキー / ソートキーの設計を README 等に明示すること
+* MVP では以下を使用しない
+
+  * 強い整合性
+  * トランザクション
+  * 複雑な GSI
 
 ---
 
 ## フロントエンドとの責務分離
 
-- フロントエンドは S3 + CloudFront でホスティングする
-- バックエンド API は Lambda 経由でのみアクセスする
-- フロントエンドに AWS SDK を直接持ち込まない
+* フロントエンドは **AWS Amplify Hosting** でホスティングする
+* バックエンドは **SAM + API Gateway + Lambda** のみで構成する
+* フロントエンドは API Gateway 経由でのみバックエンドにアクセスする
+* フロントエンドに AWS SDK を直接持ち込まない
+* 認証情報・AWS クレデンシャルをフロントエンドに置かない
 
 ---
 
 ## ローカル開発ルール
 
-- `sam local start-api` でローカル起動できること
-- DynamoDB Local もしくはモックで動作確認可能であること
-- ローカル専用コードを本番用 Lambda に含めない
+* `sam local start-api` でローカル起動できること
+* DynamoDB Local またはモックで動作確認可能であること
+* ローカル専用コード・分岐を本番用 Lambda に含めない
+* ローカル検証が困難な場合は **AWS 上の dev 相当環境で代替確認** してよい
 
 ---
 
 ## デプロイに関するルール
 
-- `sam deploy` によるデプロイを前提とする
-- `sam deploy --guided` は初回のみ人間が実行する
-- CI/CD を前提とした構成に拡張可能であること
+* バックエンドは `sam deploy` によるデプロイを前提とする
+* `sam deploy --guided` は初回のみ手動実行を許可する
+* フロントエンドは Git push による Amplify 自動デプロイとする
+* CI/CD への拡張を妨げない構成とする
 
 ---
 
 ## MVPスコープ制約
 
-- ログイン・認証機能は実装しない
-- 回答履歴の永続化は行わない
-- 分析・集計処理は行わない
-- バッチ処理は実装しない
+* ログイン・認証機能は実装しない
+* 回答履歴の永続化は行わない
+* 分析・集計処理は行わない
+* バッチ処理・定期実行は実装しない
 
 ---
 
 ## 逸脱禁止
 
 本 Rules に反する構成・技術選定・実装案を提案してはならない。
-必要な変更がある場合は、必ず理由と代替案を明示すること。
+必要な変更がある場合は、**理由・影響範囲・代替案** を必ず明示すること。

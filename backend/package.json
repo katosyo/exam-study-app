@@ -1,0 +1,19 @@
+{
+  "name": "exam-study-app-backend",
+  "version": "1.0.0",
+  "description": "Backend for Exam Study App",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"No tests yet\""
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.705.0",
+    "@aws-sdk/lib-dynamodb": "^3.705.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.145",
+    "@types/node": "^20.17.9",
+    "typescript": "^5.7.3"
+  }
+}
