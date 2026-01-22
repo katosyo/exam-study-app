@@ -1,0 +1,7 @@
+# Amplify のビルドから除外するファイル・ディレクトリ
+
+backend/
+.aws-sam/
+*.md
+docs/
+.cursor/
