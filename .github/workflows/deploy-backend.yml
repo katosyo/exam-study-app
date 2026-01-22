@@ -31,6 +31,11 @@ jobs:
           cd backend
           npm install
 
+      - name: Build backend
+        run: |
+          cd backend
+          npm run build
+
       - name: Setup AWS SAM CLI
         uses: aws-actions/setup-sam@v2
         with:
