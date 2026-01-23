@@ -45,7 +45,7 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         {isLoggedIn ? (
           <button
-            onClick={() => router.push('/')}
+            onClick={() => router.push('/home')}
             title="ホーム"
             style={{
               padding: '0.5rem 1rem',
@@ -76,7 +76,10 @@ export default function DashboardPage() {
             🔐 ログイン
           </button>
         )}
-        <h1 style={{ textAlign: 'center', flex: 1, color: '#333', margin: 0 }}>
+        <h1 
+          onClick={() => router.push('/home')}
+          style={{ textAlign: 'center', flex: 1, color: '#333', margin: 0, cursor: 'pointer' }}
+        >
           🎓 IT試験学習アプリ
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>

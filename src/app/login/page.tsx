@@ -18,7 +18,7 @@ export default function LoginPage() {
     try {
       // Mock: 常に成功
       await login(email, password)
-      router.push('/') // ログイン後はホーム画面へ遷移
+      router.push('/home') // ログイン後はホーム画面へ遷移
     } catch (error) {
       console.error('Login failed:', error)
     } finally {

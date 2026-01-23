@@ -14,7 +14,7 @@ export default function HistoryPage() {
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
             <button
-              onClick={() => router.push('/')}
+              onClick={() => router.push('/home')}
               title="ホーム"
               style={{
                 padding: '0.5rem 1rem',
@@ -28,7 +28,10 @@ export default function HistoryPage() {
             >
               🏠 ホーム
             </button>
-            <h1 style={{ textAlign: 'center', flex: 1, color: '#333', margin: 0 }}>
+            <h1 
+              onClick={() => router.push('/home')}
+              style={{ textAlign: 'center', flex: 1, color: '#333', margin: 0, cursor: 'pointer' }}
+            >
               📚 回答履歴
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
