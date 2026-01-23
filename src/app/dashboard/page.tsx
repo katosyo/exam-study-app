@@ -57,9 +57,26 @@ export default function DashboardPage() {
           🎓 IT試験学習アプリ
         </h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span style={{ color: '#666', fontSize: '0.9rem' }}>
-            {user?.displayName} ({user?.email})
-          </span>
+          <button
+            onClick={() => router.push('/profile')}
+            title="プロフィール編集"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '40px',
+              height: '40px',
+              background: '#0070f3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '50%',
+              fontSize: '1.2rem',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+            }}
+          >
+            👤
+          </button>
           <button
             onClick={handleLogout}
             style={{
