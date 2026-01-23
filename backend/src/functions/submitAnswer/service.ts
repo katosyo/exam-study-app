@@ -57,7 +57,7 @@ export class SubmitAnswerService {
       userId: input.userId,
       questionId: input.questionId,
       examType: question.examType,
-      category: question.category,
+      category: question.category || '一般',
       isCorrect,
       selectedIndex: input.selectedIndex,
     })
@@ -71,7 +71,7 @@ export class SubmitAnswerService {
       input.userId,
       input.questionId,
       question.examType,
-      question.category,
+      question.category || '一般',
       isCorrect
     )
 
