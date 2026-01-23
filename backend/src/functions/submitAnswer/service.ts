@@ -11,6 +11,7 @@ import { calculateProficiencyLevel, ProficiencyLevel } from '../../domain/questi
 
 export interface SubmitAnswerInput {
   userId: string
+  examType: 'FE' | 'AP'
   questionId: string
   selectedIndex: number
 }
@@ -41,7 +42,7 @@ export class SubmitAnswerService {
     }
 
     // 2. 問題を取得
-    const questionResult = await this.questionRepository.getById(input.questionId)
+    const questionResult = await this.questionRepository.getById(input.examType, input.questionId)
     if (!questionResult.ok) {
       return questionResult as Result<SubmitAnswerOutput>
     }

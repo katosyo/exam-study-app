@@ -48,11 +48,12 @@ export async function handler(
     }
 
     const body = JSON.parse(event.body)
-    const { questionId, selectedIndex } = body
+    const { examType, questionId, selectedIndex } = body
 
     // Service を実行
     const result = await service.execute({
       userId,
+      examType,
       questionId,
       selectedIndex,
     })

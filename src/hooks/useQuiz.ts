@@ -10,6 +10,7 @@ type Stage = 'select' | 'loading' | 'quiz' | 'submitting' | 'complete'
 
 export function useQuiz() {
   const [stage, setStage] = useState<Stage>('select')
+  const [examType, setExamType] = useState<ExamType | null>(null)
   const [questions, setQuestions] = useState<Question[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
@@ -18,11 +19,12 @@ export function useQuiz() {
   const [score, setScore] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
-  const handleStart = async (examType: ExamType, limit: number) => {
+  const handleStart = async (selectedExamType: ExamType, limit: number) => {
     setStage('loading')
     setError(null)
+    setExamType(selectedExamType)
 
-    const result = await fetchQuestions(examType, limit)
+    const result = await fetchQuestions(selectedExamType, limit)
 
     if (!result.ok) {
       setError(result.error.message)
@@ -41,12 +43,13 @@ export function useQuiz() {
   }
 
   const handleSubmitAnswer = async () => {
-    if (selectedAnswer === null) return
+    if (selectedAnswer === null || !examType) return
 
     setStage('submitting')
 
     const currentQuestion = questions[currentIndex]
     const result = await submitAnswer({
+      examType,
       questionId: currentQuestion.id,
       selectedIndex: selectedAnswer,
     })
@@ -80,6 +83,7 @@ export function useQuiz() {
 
   const handleRestart = () => {
     setStage('select')
+    setExamType(null)
     setQuestions([])
     setCurrentIndex(0)
     setSelectedAnswer(null)

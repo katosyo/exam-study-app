@@ -13,6 +13,7 @@ export type ApiResult<T> =
 export type ProficiencyLevel = 'master' | 'good' | 'neutral' | 'weak' | 'very-weak'
 
 export interface SubmitAnswerRequest {
+  examType: ExamType
   questionId: string
   selectedIndex: number
 }
