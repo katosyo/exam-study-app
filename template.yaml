@@ -136,6 +136,31 @@ Resources:
             Path: /answers
             Method: POST
 
+  GetStatsSummaryFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: dist/functions/getStatsSummary/handler.handler
+      Environment:
+        Variables:
+          QUESTIONS_TABLE_NAME: !Ref QuestionsTable
+          QUESTION_STATS_TABLE_NAME: !Ref QuestionStatsTable
+          ANSWER_HISTORY_TABLE_NAME: !Ref AnswerHistoryTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref QuestionsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref QuestionStatsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref AnswerHistoryTable
+      Events:
+        GetStatsSummary:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /stats/summary
+            Method: GET
+
   # HTTP API
   HttpApi:
     Type: AWS::Serverless::HttpApi

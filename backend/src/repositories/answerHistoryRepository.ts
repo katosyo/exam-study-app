@@ -2,7 +2,7 @@
  * AnswerHistory Repository
  */
 
-import { DynamoDBDocumentClient, PutCommand } from '@aws-sdk/lib-dynamodb'
+import { DynamoDBDocumentClient, PutCommand, QueryCommand } from '@aws-sdk/lib-dynamodb'
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb'
 import { Result, success, failure } from '../shared/result'
 import { ErrorCode } from '../shared/errors'
@@ -52,6 +52,33 @@ export class AnswerHistoryRepository {
       return failure(
         ErrorCode.DATABASE_ERROR,
         'Failed to save answer history'
+      )
+    }
+  }
+
+  /**
+   * ユーザーの全回答履歴を取得
+   */
+  async getByUserId(userId: string): Promise<Result<AnswerHistory[]>> {
+    try {
+      const result = await this.dynamoClient.send(
+        new QueryCommand({
+          TableName: this.tableName,
+          KeyConditionExpression: 'PK = :pk',
+          ExpressionAttributeValues: {
+            ':pk': `USER#${userId}`,
+          },
+          ScanIndexForward: false, // 新しい順
+        })
+      )
+
+      const items = (result.Items || []) as AnswerHistory[]
+      return success(items)
+    } catch (error) {
+      console.error('Failed to get answer history:', error)
+      return failure(
+        ErrorCode.DATABASE_ERROR,
+        'Failed to get answer history'
       )
     }
   }

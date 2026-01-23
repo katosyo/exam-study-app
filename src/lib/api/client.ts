@@ -31,6 +31,21 @@ export interface SubmitAnswerResponse {
   }
 }
 
+export interface StatsSummaryResponse {
+  result: {
+    answeredRatio: number
+    consecutiveDays: number
+    proficiencyDistribution: {
+      level: ProficiencyLevel
+      count: number
+      percentage: number
+    }[]
+    lastStudiedAt: string | null
+    totalQuestions: number
+    answeredQuestions: number
+  }
+}
+
 export async function fetchQuestions(
   examType: ExamType,
   limit: number
@@ -86,6 +101,36 @@ export async function submitAnswer(
         error: error.error || {
           code: 'UNKNOWN_ERROR',
           message: 'Failed to submit answer',
+        },
+      }
+    }
+
+    const data = await response.json()
+    return { ok: true, data }
+  } catch (error) {
+    return {
+      ok: false,
+      error: {
+        code: 'NETWORK_ERROR',
+        message: 'Network error occurred',
+        details: error,
+      },
+    }
+  }
+}
+
+export async function getStatsSummary(): Promise<ApiResult<StatsSummaryResponse>> {
+  try {
+    const url = `${API_BASE_URL}/stats/summary`
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      const error = await response.json()
+      return {
+        ok: false,
+        error: error.error || {
+          code: 'UNKNOWN_ERROR',
+          message: 'Failed to fetch stats summary',
         },
       }
     }

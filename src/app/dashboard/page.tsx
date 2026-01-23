@@ -54,6 +54,21 @@ export default function DashboardPage() {
   return (
     <main style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <button
+          onClick={() => router.push('/')}
+          title="ホーム"
+          style={{
+            padding: '0.5rem 1rem',
+            background: '#0070f3',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+          }}
+        >
+          🏠 ホーム
+        </button>
         <h1 style={{ textAlign: 'center', flex: 1, color: '#333', margin: 0 }}>
           🎓 IT試験学習アプリ
         </h1>
