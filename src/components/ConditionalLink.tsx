@@ -15,8 +15,8 @@ interface ConditionalLinkProps {
   requireAuth?: boolean
   className?: string
   style?: React.CSSProperties
-  onMouseEnter?: (e: React.MouseEvent<HTMLDivElement>) => void
-  onMouseLeave?: (e: React.MouseEvent<HTMLDivElement>) => void
+  onMouseEnter?: (e: React.MouseEvent<HTMLElement>) => void
+  onMouseLeave?: (e: React.MouseEvent<HTMLElement>) => void
 }
 
 export function ConditionalLink({
@@ -48,8 +48,8 @@ export function ConditionalLink({
         className={className}
         style={combinedStyle}
         title="ログイン後に利用できます"
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
+        onMouseEnter={onMouseEnter as React.MouseEventHandler<HTMLDivElement>}
+        onMouseLeave={onMouseLeave as React.MouseEventHandler<HTMLDivElement>}
       >
         {children}
         <div
@@ -82,8 +82,8 @@ export function ConditionalLink({
       href={href}
       className={className}
       style={combinedStyle}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
+      onMouseEnter={onMouseEnter as React.MouseEventHandler<HTMLAnchorElement>}
+      onMouseLeave={onMouseLeave as React.MouseEventHandler<HTMLAnchorElement>}
     >
       {children}
     </Link>
