@@ -46,6 +46,28 @@ export interface StatsSummaryResponse {
   }
 }
 
+export interface HistoryQuestionsResponse {
+  result: {
+    items: {
+      questionId: string
+      questionText: string
+      examType: ExamType
+      category: string
+      correctCount: number
+      incorrectCount: number
+      proficiencyLevel: ProficiencyLevel
+      lastAnsweredAt: string
+    }[]
+    total: number
+  }
+}
+
+export interface GetHistoryQuestionsParams {
+  category?: string
+  proficiencyLevel?: ProficiencyLevel
+  examType?: ExamType
+}
+
 export async function fetchQuestions(
   examType: ExamType,
   limit: number
@@ -131,6 +153,50 @@ export async function getStatsSummary(): Promise<ApiResult<StatsSummaryResponse>
         error: error.error || {
           code: 'UNKNOWN_ERROR',
           message: 'Failed to fetch stats summary',
+        },
+      }
+    }
+
+    const data = await response.json()
+    return { ok: true, data }
+  } catch (error) {
+    return {
+      ok: false,
+      error: {
+        code: 'NETWORK_ERROR',
+        message: 'Network error occurred',
+        details: error,
+      },
+    }
+  }
+}
+
+export async function getHistoryQuestions(
+  params?: GetHistoryQuestionsParams
+): Promise<ApiResult<HistoryQuestionsResponse>> {
+  try {
+    const queryParams = new URLSearchParams()
+    if (params?.category) {
+      queryParams.append('category', params.category)
+    }
+    if (params?.proficiencyLevel) {
+      queryParams.append('proficiencyLevel', params.proficiencyLevel)
+    }
+    if (params?.examType) {
+      queryParams.append('examType', params.examType)
+    }
+
+    const queryString = queryParams.toString()
+    const url = `${API_BASE_URL}/history/questions${queryString ? `?${queryString}` : ''}`
+    const response = await fetch(url)
+
+    if (!response.ok) {
+      const error = await response.json()
+      return {
+        ok: false,
+        error: error.error || {
+          code: 'UNKNOWN_ERROR',
+          message: 'Failed to fetch history questions',
         },
       }
     }

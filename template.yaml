@@ -161,6 +161,28 @@ Resources:
             Path: /stats/summary
             Method: GET
 
+  GetHistoryQuestionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: dist/functions/getHistoryQuestions/handler.handler
+      Environment:
+        Variables:
+          QUESTIONS_TABLE_NAME: !Ref QuestionsTable
+          QUESTION_STATS_TABLE_NAME: !Ref QuestionStatsTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref QuestionsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref QuestionStatsTable
+      Events:
+        GetHistoryQuestions:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /history/questions
+            Method: GET
+
   # HTTP API
   HttpApi:
     Type: AWS::Serverless::HttpApi

@@ -1,12 +1,65 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { PageGuard } from '@/components/PageGuard'
+import { HistoryFilter } from '@/components/HistoryFilter'
+import { HistoryItem } from '@/components/HistoryItem'
+import { EmptyState } from '@/components/EmptyState'
+import { getHistoryQuestions, ProficiencyLevel, ExamType } from '@/lib/api/client'
 
 export default function HistoryPage() {
   const { isLoggedIn, logout } = useAuth()
   const router = useRouter()
+  const [items, setItems] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  // フィルタ状態
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedProficiencyLevel, setSelectedProficiencyLevel] = useState<ProficiencyLevel | null>(null)
+  const [selectedExamType, setSelectedExamType] = useState<ExamType | null>(null)
+
+  // 利用可能なカテゴリ一覧
+  const [categories, setCategories] = useState<string[]>([])
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      loadHistory()
+    }
+  }, [isLoggedIn, selectedCategory, selectedProficiencyLevel, selectedExamType])
+
+  const loadHistory = async () => {
+    setLoading(true)
+    setError(null)
+
+    const params: any = {}
+    if (selectedCategory) params.category = selectedCategory
+    if (selectedProficiencyLevel) params.proficiencyLevel = selectedProficiencyLevel
+    if (selectedExamType) params.examType = selectedExamType
+
+    const result = await getHistoryQuestions(params)
+
+    if (result.ok) {
+      setItems(result.data.result.items)
+
+      // カテゴリ一覧を抽出（重複除去）
+      const uniqueCategories = Array.from(
+        new Set(result.data.result.items.map((item) => item.category))
+      ).sort()
+      setCategories(uniqueCategories)
+    } else {
+      setError(result.error.message)
+    }
+
+    setLoading(false)
+  }
+
+  const handleRetry = (questionId: string, examType: ExamType) => {
+    // 問題を解くページに遷移（特定の問題を解く機能は将来実装）
+    router.push(`/dashboard?questionId=${questionId}&examType=${examType}`)
+  }
 
   return (
     <PageGuard requireAuth={true}>
@@ -28,7 +81,7 @@ export default function HistoryPage() {
             >
               🏠 ホーム
             </button>
-            <h1 
+            <h1
               onClick={() => router.push('/home')}
               style={{ textAlign: 'center', flex: 1, color: '#333', margin: 0, cursor: 'pointer' }}
             >
@@ -72,11 +125,62 @@ export default function HistoryPage() {
             </div>
           </div>
 
-          <div style={{ background: 'white', padding: '2rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
-            <p style={{ textAlign: 'center', color: '#666' }}>
-              回答履歴機能は今後実装予定です
-            </p>
-          </div>
+          {error && (
+            <div
+              style={{
+                padding: '1rem',
+                background: '#fee2e2',
+                border: '1px solid #ef4444',
+                borderRadius: '8px',
+                marginBottom: '2rem',
+                color: '#991b1b',
+              }}
+            >
+              <p>エラー: {error}</p>
+            </div>
+          )}
+
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '4rem' }}>
+              <p>読み込み中...</p>
+            </div>
+          ) : (
+            <>
+              <HistoryFilter
+                selectedCategory={selectedCategory}
+                selectedProficiencyLevel={selectedProficiencyLevel}
+                selectedExamType={selectedExamType}
+                categories={categories}
+                onCategoryChange={setSelectedCategory}
+                onProficiencyLevelChange={setSelectedProficiencyLevel}
+                onExamTypeChange={setSelectedExamType}
+              />
+
+              {items.length === 0 ? (
+                <EmptyState message="まだ回答履歴がありません" />
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>
+                    全{items.length}件
+                  </div>
+                  {items.map((item) => (
+                    <HistoryItem
+                      key={item.questionId}
+                      questionId={item.questionId}
+                      questionText={item.questionText}
+                      examType={item.examType}
+                      category={item.category}
+                      correctCount={item.correctCount}
+                      incorrectCount={item.incorrectCount}
+                      proficiencyLevel={item.proficiencyLevel}
+                      lastAnsweredAt={item.lastAnsweredAt}
+                      onRetry={handleRetry}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </main>
     </PageGuard>
