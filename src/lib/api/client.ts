@@ -10,6 +10,26 @@ export type ApiResult<T> =
   | { ok: true; data: T }
   | { ok: false; error: ApiError }
 
+export type ProficiencyLevel = 'master' | 'good' | 'neutral' | 'weak' | 'very-weak'
+
+export interface SubmitAnswerRequest {
+  questionId: string
+  selectedIndex: number
+}
+
+export interface SubmitAnswerResponse {
+  result: {
+    isCorrect: boolean
+    correctIndex: number
+    explanation: string
+    stats: {
+      correctCount: number
+      incorrectCount: number
+      proficiencyLevel: ProficiencyLevel
+    }
+  }
+}
+
 export async function fetchQuestions(
   examType: ExamType,
   limit: number
@@ -27,6 +47,44 @@ export async function fetchQuestions(
         error: error.error || {
           code: 'UNKNOWN_ERROR',
           message: 'Failed to fetch questions',
+        },
+      }
+    }
+
+    const data = await response.json()
+    return { ok: true, data }
+  } catch (error) {
+    return {
+      ok: false,
+      error: {
+        code: 'NETWORK_ERROR',
+        message: 'Network error occurred',
+        details: error,
+      },
+    }
+  }
+}
+
+export async function submitAnswer(
+  request: SubmitAnswerRequest
+): Promise<ApiResult<SubmitAnswerResponse>> {
+  try {
+    const url = `${API_BASE_URL}/answers`
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      return {
+        ok: false,
+        error: error.error || {
+          code: 'UNKNOWN_ERROR',
+          message: 'Failed to submit answer',
         },
       }
     }

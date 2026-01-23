@@ -17,6 +17,7 @@ export default function DashboardPage() {
     currentIndex,
     selectedAnswer,
     showResult,
+    answerResult,
     score,
     error,
     handleStart,
@@ -111,7 +112,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {stage === 'quiz' && questions.length > 0 && (
+      {(stage === 'quiz' || stage === 'submitting') && questions.length > 0 && (
         <>
           <QuestionCard
             question={questions[currentIndex]}
@@ -121,6 +122,7 @@ export default function DashboardPage() {
             onSelectAnswer={handleSelectAnswer}
             onSubmitAnswer={handleSubmitAnswer}
             showResult={showResult}
+            answerResult={answerResult}
           />
           {showResult && (
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>

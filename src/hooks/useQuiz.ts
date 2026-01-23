@@ -3,10 +3,10 @@
  */
 
 import { useState } from 'react'
-import { fetchQuestions } from '@/lib/api/client'
+import { fetchQuestions, submitAnswer, SubmitAnswerResponse } from '@/lib/api/client'
 import type { ExamType, Question } from '@/types/question'
 
-type Stage = 'select' | 'loading' | 'quiz' | 'complete'
+type Stage = 'select' | 'loading' | 'quiz' | 'submitting' | 'complete'
 
 export function useQuiz() {
   const [stage, setStage] = useState<Stage>('select')
@@ -14,6 +14,7 @@ export function useQuiz() {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null)
   const [showResult, setShowResult] = useState(false)
+  const [answerResult, setAnswerResult] = useState<SubmitAnswerResponse['result'] | null>(null)
   const [score, setScore] = useState(0)
   const [error, setError] = useState<string | null>(null)
 
@@ -39,11 +40,31 @@ export function useQuiz() {
     setSelectedAnswer(index)
   }
 
-  const handleSubmitAnswer = () => {
+  const handleSubmitAnswer = async () => {
+    if (selectedAnswer === null) return
+
+    setStage('submitting')
+
+    const currentQuestion = questions[currentIndex]
+    const result = await submitAnswer({
+      questionId: currentQuestion.id,
+      selectedIndex: selectedAnswer,
+    })
+
+    if (!result.ok) {
+      setError(result.error.message)
+      setStage('quiz')
+      return
+    }
+
+    setAnswerResult(result.data.result)
     setShowResult(true)
-    if (selectedAnswer === questions[currentIndex].answerIndex) {
+
+    if (result.data.result.isCorrect) {
       setScore((prev) => prev + 1)
     }
+
+    setStage('quiz')
   }
 
   const handleNext = () => {
@@ -51,6 +72,7 @@ export function useQuiz() {
       setCurrentIndex((prev) => prev + 1)
       setSelectedAnswer(null)
       setShowResult(false)
+      setAnswerResult(null)
     } else {
       setStage('complete')
     }
@@ -62,6 +84,7 @@ export function useQuiz() {
     setCurrentIndex(0)
     setSelectedAnswer(null)
     setShowResult(false)
+    setAnswerResult(null)
     setScore(0)
     setError(null)
   }
@@ -72,6 +95,7 @@ export function useQuiz() {
     currentIndex,
     selectedAnswer,
     showResult,
+    answerResult,
     score,
     error,
     handleStart,

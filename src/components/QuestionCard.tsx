@@ -1,6 +1,7 @@
 'use client'
 
 import { Question } from '@/types/question'
+import { SubmitAnswerResponse } from '@/lib/api/client'
 
 interface QuestionCardProps {
   question: Question
@@ -10,6 +11,23 @@ interface QuestionCardProps {
   onSelectAnswer: (index: number) => void
   onSubmitAnswer: () => void
   showResult: boolean
+  answerResult?: SubmitAnswerResponse['result'] | null
+}
+
+const proficiencyLevelLabels = {
+  'master': '超得意',
+  'good': '得意',
+  'neutral': '普通',
+  'weak': '苦手',
+  'very-weak': '超苦手',
+}
+
+const proficiencyLevelColors = {
+  'master': '#10b981',
+  'good': '#3b82f6',
+  'neutral': '#6b7280',
+  'weak': '#f59e0b',
+  'very-weak': '#ef4444',
 }
 
 export function QuestionCard({
@@ -20,8 +38,9 @@ export function QuestionCard({
   onSelectAnswer,
   onSubmitAnswer,
   showResult,
+  answerResult,
 }: QuestionCardProps) {
-  const isCorrect = selectedAnswer === question.answerIndex
+  const isCorrect = answerResult?.isCorrect ?? (selectedAnswer === question.answerIndex)
 
   return (
     <div className="question-card">
@@ -66,10 +85,36 @@ export function QuestionCard({
         </button>
       )}
 
-      {showResult && (
+      {showResult && answerResult && (
         <div className={`result ${isCorrect ? 'correct' : 'incorrect'}`}>
           <h4>{isCorrect ? '✓ 正解！' : '✗ 不正解'}</h4>
-          <p className="explanation">{question.explanation}</p>
+          <p className="explanation">{answerResult.explanation}</p>
+          
+          <div className="stats">
+            <h5>📊 この問題の統計</h5>
+            <div className="stats-grid">
+              <div className="stat-item">
+                <span className="stat-label">正解数:</span>
+                <span className="stat-value">{answerResult.stats.correctCount}回</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">不正解数:</span>
+                <span className="stat-value">{answerResult.stats.incorrectCount}回</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">得意度:</span>
+                <span 
+                  className="stat-value proficiency"
+                  style={{ 
+                    color: proficiencyLevelColors[answerResult.stats.proficiencyLevel],
+                    fontWeight: 'bold'
+                  }}
+                >
+                  {proficiencyLevelLabels[answerResult.stats.proficiencyLevel]}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -181,6 +226,43 @@ export function QuestionCard({
         .explanation {
           line-height: 1.6;
           color: #333;
+          margin-bottom: 1.5rem;
+        }
+        .stats {
+          padding-top: 1.5rem;
+          border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+        .stats h5 {
+          margin-bottom: 1rem;
+          font-size: 1rem;
+          color: #555;
+        }
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+        }
+        .stat-item {
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+        }
+        .stat-label {
+          font-size: 0.85rem;
+          color: #666;
+        }
+        .stat-value {
+          font-size: 1.1rem;
+          font-weight: 600;
+          color: #333;
+        }
+        .stat-value.proficiency {
+          font-size: 1.2rem;
+        }
+        @media (max-width: 640px) {
+          .stats-grid {
+            grid-template-columns: 1fr;
+          }
         }
       `}</style>
     </div>
