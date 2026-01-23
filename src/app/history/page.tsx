@@ -160,8 +160,8 @@ export default function HistoryPage() {
               {items.length === 0 ? (
                 <EmptyState message="まだ回答履歴がありません" />
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                  <div style={{ fontSize: '0.9rem', color: '#666', marginBottom: '0.25rem' }}>
                     全{items.length}件
                   </div>
                   {items.map((item) => (
