@@ -7,7 +7,8 @@ import { PageGuard } from '@/components/PageGuard'
 import { HistoryFilter } from '@/components/HistoryFilter'
 import { HistoryItem } from '@/components/HistoryItem'
 import { EmptyState } from '@/components/EmptyState'
-import { getHistoryQuestions, ProficiencyLevel, ExamType } from '@/lib/api/client'
+import { getHistoryQuestions, ProficiencyLevel } from '@/lib/api/client'
+import type { ExamType } from '@/types/question'
 
 export default function HistoryPage() {
   const { isLoggedIn, logout } = useAuth()
