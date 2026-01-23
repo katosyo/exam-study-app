@@ -1,114 +1,26 @@
 'use client'
 
-import { ExamSelector } from '@/components/ExamSelector'
-import { QuestionCard } from '@/components/QuestionCard'
-import { useQuiz } from '@/hooks/useQuiz'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/context/AuthContext'
 
 export default function Home() {
-  const {
-    stage,
-    questions,
-    currentIndex,
-    selectedAnswer,
-    showResult,
-    score,
-    error,
-    handleStart,
-    handleSelectAnswer,
-    handleSubmitAnswer,
-    handleNext,
-    handleRestart,
-  } = useQuiz()
+  const { isAuthenticated, isLoading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (isAuthenticated) {
+        router.push('/dashboard')
+      } else {
+        router.push('/login')
+      }
+    }
+  }, [isLoading, isAuthenticated, router])
 
   return (
-    <main style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem' }}>
-      <h1 style={{ textAlign: 'center', marginBottom: '2rem', color: '#333' }}>
-        🎓 IT試験学習アプリ
-      </h1>
-
-      {stage === 'select' && (
-        <>
-          <ExamSelector onStart={handleStart} />
-          {error && (
-            <div style={{ textAlign: 'center', color: 'red', marginTop: '1rem' }}>
-              エラー: {error}
-            </div>
-          )}
-        </>
-      )}
-
-      {stage === 'loading' && (
-        <div style={{ textAlign: 'center', padding: '4rem' }}>
-          <p>問題を読み込み中...</p>
-        </div>
-      )}
-
-      {stage === 'quiz' && questions.length > 0 && (
-        <>
-          <QuestionCard
-            question={questions[currentIndex]}
-            currentIndex={currentIndex}
-            totalCount={questions.length}
-            selectedAnswer={selectedAnswer}
-            onSelectAnswer={handleSelectAnswer}
-            onSubmitAnswer={handleSubmitAnswer}
-            showResult={showResult}
-          />
-          {showResult && (
-            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-              <button
-                onClick={handleNext}
-                style={{
-                  padding: '1rem 2rem',
-                  background: '#0070f3',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '4px',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                }}
-              >
-                {currentIndex + 1 < questions.length ? '次の問題へ' : '結果を見る'}
-              </button>
-            </div>
-          )}
-        </>
-      )}
-
-      {stage === 'complete' && (
-        <div
-          style={{
-            maxWidth: '500px',
-            margin: '0 auto',
-            padding: '2rem',
-            background: 'white',
-            borderRadius: '8px',
-            textAlign: 'center',
-          }}
-        >
-          <h2>お疲れ様でした！</h2>
-          <p style={{ fontSize: '2rem', margin: '2rem 0' }}>
-            {score} / {questions.length} 問正解
-          </p>
-          <p style={{ fontSize: '1.5rem', color: '#0070f3', marginBottom: '2rem' }}>
-            正答率: {Math.round((score / questions.length) * 100)}%
-          </p>
-          <button
-            onClick={handleRestart}
-            style={{
-              padding: '1rem 2rem',
-              background: '#0070f3',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              fontSize: '1rem',
-              cursor: 'pointer',
-            }}
-          >
-            もう一度挑戦する
-          </button>
-        </div>
-      )}
+    <main style={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <p>読み込み中...</p>
     </main>
   )
 }

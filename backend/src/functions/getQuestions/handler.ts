@@ -16,6 +16,10 @@ export async function handler(
 ): Promise<APIGatewayProxyResult> {
   console.log('Event:', JSON.stringify(event))
 
+  // NOTE: Mock認証 - 将来 Cognito JWT から取得
+  const userId = 'mock-user-id'
+  console.log('UserId:', userId)
+
   try {
     const exam = event.queryStringParameters?.exam || ''
     const limitStr = event.queryStringParameters?.limit || '10'

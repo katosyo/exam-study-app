@@ -15,8 +15,16 @@ export async function fetchQuestions(
   limit: number
 ): Promise<ApiResult<GetQuestionsResponse>> {
   try {
+    // NOTE: Mock認証 - 将来 Cognito アクセストークンを使用
+    const mockToken = 'mock-access-token'
+    
     const url = `${API_BASE_URL}/questions?exam=${examType}&limit=${limit}`
-    const response = await fetch(url)
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${mockToken}`,
+        'Content-Type': 'application/json',
+      },
+    })
 
     if (!response.ok) {
       const error = await response.json()
