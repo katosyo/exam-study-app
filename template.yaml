@@ -28,6 +28,66 @@ Resources:
         - AttributeName: SK
           KeyType: RANGE
 
+  # 回答履歴テーブル
+  AnswerHistoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${AWS::StackName}-AnswerHistory'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  # 問題統計テーブル
+  QuestionStatsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${AWS::StackName}-QuestionStats'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
   # Lambda 関数
   GetQuestionsFunction:
     Type: AWS::Serverless::Function
@@ -37,9 +97,12 @@ Resources:
       Environment:
         Variables:
           QUESTIONS_TABLE_NAME: !Ref QuestionsTable
+          QUESTION_STATS_TABLE_NAME: !Ref QuestionStatsTable
       Policies:
         - DynamoDBReadPolicy:
             TableName: !Ref QuestionsTable
+        - DynamoDBReadPolicy:
+            TableName: !Ref QuestionStatsTable
       Events:
         GetQuestions:
           Type: HttpApi
@@ -47,6 +110,31 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /questions
             Method: GET
+
+  SubmitAnswerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/
+      Handler: dist/functions/submitAnswer/handler.handler
+      Environment:
+        Variables:
+          QUESTIONS_TABLE_NAME: !Ref QuestionsTable
+          ANSWER_HISTORY_TABLE_NAME: !Ref AnswerHistoryTable
+          QUESTION_STATS_TABLE_NAME: !Ref QuestionStatsTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref QuestionsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref AnswerHistoryTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref QuestionStatsTable
+      Events:
+        SubmitAnswer:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /answers
+            Method: POST
 
   # HTTP API
   HttpApi:
@@ -57,6 +145,7 @@ Resources:
           - '*'
         AllowMethods:
           - GET
+          - POST
           - OPTIONS
         AllowHeaders:
           - Content-Type
@@ -68,5 +157,13 @@ Outputs:
     Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com'
 
   QuestionsTableName:
-    Description: DynamoDB table name
+    Description: DynamoDB Questions table name
     Value: !Ref QuestionsTable
+
+  AnswerHistoryTableName:
+    Description: DynamoDB AnswerHistory table name
+    Value: !Ref AnswerHistoryTable
+
+  QuestionStatsTableName:
+    Description: DynamoDB QuestionStats table name
+    Value: !Ref QuestionStatsTable
