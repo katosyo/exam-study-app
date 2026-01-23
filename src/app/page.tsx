@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { getStatsSummary, ProficiencyLevel } from '@/lib/api/client'
+import { getStatsSummary, ProficiencyLevel, StatsSummaryResponse } from '@/lib/api/client'
 import Link from 'next/link'
 
 const proficiencyLevelLabels: Record<ProficiencyLevel, string> = {
@@ -25,7 +25,7 @@ const proficiencyLevelColors: Record<ProficiencyLevel, string> = {
 export default function HomePage() {
   const { isAuthenticated, isLoading, user, logout } = useAuth()
   const router = useRouter()
-  const [stats, setStats] = useState<any>(null)
+  const [stats, setStats] = useState<StatsSummaryResponse['result'] | null>(null)
   const [loadingStats, setLoadingStats] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
