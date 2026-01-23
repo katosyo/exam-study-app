@@ -33,6 +33,9 @@ export default function HomePage() {
   useEffect(() => {
     if (!isLoading && isLoggedIn) {
       loadStats()
+    } else if (!isLoading && !isLoggedIn) {
+      // 非ログイン時は統計情報を読み込まない
+      setLoadingStats(false)
     }
   }, [isLoading, isLoggedIn])
 
@@ -69,7 +72,7 @@ export default function HomePage() {
   }
 
   return (
-    <PageGuard requireAuth={true}>
+    <PageGuard requireAuth={false}>
     <main style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* ヘッダー */}
@@ -81,12 +84,25 @@ export default function HomePage() {
             🎓 IT試験学習アプリ
           </h1>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button onClick={() => router.push('/profile')} title="プロフィール編集" style={{ fontSize: '1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>
-              👤
-            </button>
-            <button onClick={logout} style={{ padding: '0.5rem 1rem', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-              ログアウト
-            </button>
+            {isLoggedIn ? (
+              <>
+                <button onClick={() => router.push('/profile')} title="プロフィール編集" style={{ fontSize: '1.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  👤
+                </button>
+                <button onClick={logout} style={{ padding: '0.5rem 1rem', background: '#ef4444', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  ログアウト
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => router.push('/login')} style={{ padding: '0.5rem 1rem', background: '#0070f3', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  ログイン
+                </button>
+                <button onClick={() => router.push('/signup')} style={{ padding: '0.5rem 1rem', background: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                  新規登録
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -97,7 +113,7 @@ export default function HomePage() {
         )}
 
         {/* 学習状況サマリー */}
-        {stats && (
+        {isLoggedIn && stats ? (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
             {/* 回答済み問題の割合 */}
             <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
@@ -166,7 +182,29 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-        )}
+        ) : !isLoggedIn ? (
+          /* 非ログイン時の統計情報プレースホルダー */
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', opacity: 0.5 }}>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: '600', marginBottom: '1rem', color: '#999' }}>📊 学習進捗</h2>
+              <div style={{ textAlign: 'center', padding: '2rem 0', color: '#999' }}>
+                <p style={{ fontSize: '0.9rem' }}>ログイン後に利用できます</p>
+              </div>
+            </div>
+            <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', opacity: 0.5 }}>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: '600', marginBottom: '1rem', color: '#999' }}>🔥 連続学習</h2>
+              <div style={{ textAlign: 'center', padding: '2rem 0', color: '#999' }}>
+                <p style={{ fontSize: '0.9rem' }}>ログイン後に利用できます</p>
+              </div>
+            </div>
+            <div style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', opacity: 0.5 }}>
+              <h2 style={{ fontSize: '1.2rem', fontWeight: '600', marginBottom: '1rem', color: '#999' }}>📈 得意度分布</h2>
+              <div style={{ textAlign: 'center', padding: '2rem 0', color: '#999' }}>
+                <p style={{ fontSize: '0.9rem' }}>ログイン後に利用できます</p>
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {/* 機能へのリンク */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' }}>
@@ -199,63 +237,111 @@ export default function HomePage() {
             </p>
           </Link>
 
-          <Link
-            href="/history"
-            style={{
-              background: 'white',
-              padding: '2rem',
-              borderRadius: '12px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              textDecoration: 'none',
-              color: 'inherit',
-              display: 'block',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
-            }}
-          >
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>📚</div>
-            <h3 style={{ fontSize: '1.3rem', fontWeight: '600', marginBottom: '0.5rem', textAlign: 'center' }}>回答履歴</h3>
-            <p style={{ color: '#666', textAlign: 'center', fontSize: '0.9rem' }}>
-              これまで解いた問題の履歴を確認できます
-            </p>
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/history"
+              style={{
+                background: 'white',
+                padding: '2rem',
+                borderRadius: '12px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                textDecoration: 'none',
+                color: 'inherit',
+                display: 'block',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>📚</div>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: '600', marginBottom: '0.5rem', textAlign: 'center' }}>回答履歴</h3>
+              <p style={{ color: '#666', textAlign: 'center', fontSize: '0.9rem' }}>
+                これまで解いた問題の履歴を確認できます
+              </p>
+            </Link>
+          ) : (
+            <div
+              style={{
+                background: 'white',
+                padding: '2rem',
+                borderRadius: '12px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                opacity: 0.5,
+                cursor: 'not-allowed',
+                position: 'relative',
+              }}
+              title="ログイン後に利用できます"
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>📚</div>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: '600', marginBottom: '0.5rem', textAlign: 'center', color: '#999' }}>回答履歴</h3>
+              <p style={{ color: '#999', textAlign: 'center', fontSize: '0.9rem' }}>
+                これまで解いた問題の履歴を確認できます
+              </p>
+              <p style={{ color: '#f59e0b', textAlign: 'center', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '600' }}>
+                ログイン後に利用できます
+              </p>
+            </div>
+          )}
 
-          <Link
-            href="/weak"
-            style={{
-              background: 'white',
-              padding: '2rem',
-              borderRadius: '12px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              textDecoration: 'none',
-              color: 'inherit',
-              display: 'block',
-              transition: 'transform 0.2s, box-shadow 0.2s',
-              cursor: 'pointer',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-4px)'
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)'
-              e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
-            }}
-          >
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>🎯</div>
-            <h3 style={{ fontSize: '1.3rem', fontWeight: '600', marginBottom: '0.5rem', textAlign: 'center' }}>苦手克服</h3>
-            <p style={{ color: '#666', textAlign: 'center', fontSize: '0.9rem' }}>
-              苦手な問題から最適な学習を提供します
-            </p>
-          </Link>
+          {isLoggedIn ? (
+            <Link
+              href="/weak"
+              style={{
+                background: 'white',
+                padding: '2rem',
+                borderRadius: '12px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                textDecoration: 'none',
+                color: 'inherit',
+                display: 'block',
+                transition: 'transform 0.2s, box-shadow 0.2s',
+                cursor: 'pointer',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-4px)'
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)'
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>🎯</div>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: '600', marginBottom: '0.5rem', textAlign: 'center' }}>苦手克服</h3>
+              <p style={{ color: '#666', textAlign: 'center', fontSize: '0.9rem' }}>
+                苦手な問題から最適な学習を提供します
+              </p>
+            </Link>
+          ) : (
+            <div
+              style={{
+                background: 'white',
+                padding: '2rem',
+                borderRadius: '12px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                opacity: 0.5,
+                cursor: 'not-allowed',
+                position: 'relative',
+              }}
+              title="ログイン後に利用できます"
+            >
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>🎯</div>
+              <h3 style={{ fontSize: '1.3rem', fontWeight: '600', marginBottom: '0.5rem', textAlign: 'center', color: '#999' }}>苦手克服</h3>
+              <p style={{ color: '#999', textAlign: 'center', fontSize: '0.9rem' }}>
+                苦手な問題から最適な学習を提供します
+              </p>
+              <p style={{ color: '#f59e0b', textAlign: 'center', fontSize: '0.85rem', marginTop: '0.5rem', fontWeight: '600' }}>
+                ログイン後に利用できます
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </main>

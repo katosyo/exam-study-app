@@ -10,8 +10,8 @@ export default function RootPage() {
 
   useEffect(() => {
     if (!isLoading) {
-      // ルートURLにアクセスしたら常にdashboardにリダイレクト
-      router.push('/dashboard')
+      // ルートURLにアクセスしたら常にhomeにリダイレクト
+      router.push('/home')
     }
   }, [isLoading, router])
 
