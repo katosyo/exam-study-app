@@ -8,7 +8,7 @@ import { QuestionCard } from '@/components/QuestionCard'
 import { useQuiz } from '@/hooks/useQuiz'
 
 export default function DashboardPage() {
-  const { user, isAuthenticated, isLoading, logout } = useAuth()
+  const { user, isLoggedIn, isLoading, logout } = useAuth()
   const router = useRouter()
 
   const {
@@ -27,13 +27,6 @@ export default function DashboardPage() {
     handleRestart,
   } = useQuiz()
 
-  // 認証チェック
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login')
-    }
-  }, [isLoading, isAuthenticated, router])
-
   const handleLogout = async () => {
     await logout()
     router.push('/login')
@@ -47,57 +40,16 @@ export default function DashboardPage() {
     )
   }
 
-  if (!isAuthenticated) {
-    return null
-  }
-
   return (
     <main style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <button
-          onClick={() => router.push('/')}
-          title="ホーム"
-          style={{
-            padding: '0.5rem 1rem',
-            background: '#0070f3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-          }}
-        >
-          🏠 ホーム
-        </button>
-        <h1 style={{ textAlign: 'center', flex: 1, color: '#333', margin: 0 }}>
-          🎓 IT試験学習アプリ
-        </h1>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        {isLoggedIn ? (
           <button
-            onClick={() => router.push('/profile')}
-            title="プロフィール編集"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '40px',
-              height: '40px',
-              background: '#0070f3',
-              color: 'white',
-              border: 'none',
-              borderRadius: '50%',
-              fontSize: '1.2rem',
-              cursor: 'pointer',
-              fontWeight: 'bold',
-            }}
-          >
-            👤
-          </button>
-          <button
-            onClick={handleLogout}
+            onClick={() => router.push('/')}
+            title="ホーム"
             style={{
               padding: '0.5rem 1rem',
-              background: '#666',
+              background: '#0070f3',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
@@ -105,10 +57,106 @@ export default function DashboardPage() {
               cursor: 'pointer',
             }}
           >
-            ログアウト
+            🏠 ホーム
           </button>
+        ) : (
+          <button
+            onClick={() => router.push('/login')}
+            title="ログイン"
+            style={{
+              padding: '0.5rem 1rem',
+              background: '#0070f3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+            }}
+          >
+            🔐 ログイン
+          </button>
+        )}
+        <h1 style={{ textAlign: 'center', flex: 1, color: '#333', margin: 0 }}>
+          🎓 IT試験学習アプリ
+        </h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {isLoggedIn ? (
+            <>
+              <button
+                onClick={() => router.push('/profile')}
+                title="プロフィール編集"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '40px',
+                  height: '40px',
+                  background: '#0070f3',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '50%',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                }}
+              >
+                👤
+              </button>
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: '#666',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                }}
+              >
+                ログアウト
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => router.push('/signup')}
+              style={{
+                padding: '0.5rem 1rem',
+                background: '#10b981',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+              }}
+            >
+              新規登録
+            </button>
+          )}
         </div>
       </div>
+
+      {/* 非ログイン時の注意文 */}
+      {!isLoggedIn && (
+        <div
+          style={{
+            background: '#fff3cd',
+            border: '1px solid #ffc107',
+            borderRadius: '8px',
+            padding: '1rem',
+            marginBottom: '2rem',
+            textAlign: 'center',
+            color: '#856404',
+          }}
+        >
+          <p style={{ margin: 0, fontWeight: '600' }}>
+            ※ ログアウト状態では回答履歴は保存されません
+          </p>
+          <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem' }}>
+            ログインすると、学習状況の確認や苦手問題の分析が利用できます
+          </p>
+        </div>
+      )}
 
       {stage === 'select' && (
         <>

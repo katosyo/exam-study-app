@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { getStatsSummary, ProficiencyLevel, StatsSummaryResponse } from '@/lib/api/client'
+import { PageGuard } from '@/components/PageGuard'
 import Link from 'next/link'
 
 const proficiencyLevelLabels: Record<ProficiencyLevel, string> = {
@@ -23,22 +24,17 @@ const proficiencyLevelColors: Record<ProficiencyLevel, string> = {
 }
 
 export default function HomePage() {
-  const { isAuthenticated, isLoading, user, logout } = useAuth()
+  const { isLoggedIn, isLoading, user, logout } = useAuth()
   const router = useRouter()
   const [stats, setStats] = useState<StatsSummaryResponse['result'] | null>(null)
   const [loadingStats, setLoadingStats] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login')
-      return
-    }
-
-    if (isAuthenticated) {
+    if (!isLoading && isLoggedIn) {
       loadStats()
     }
-  }, [isLoading, isAuthenticated, router])
+  }, [isLoading, isLoggedIn])
 
   const loadStats = async () => {
     setLoadingStats(true)
@@ -64,7 +60,7 @@ export default function HomePage() {
     })
   }
 
-  if (isLoading || loadingStats) {
+  if (loadingStats) {
     return (
       <main style={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p>読み込み中...</p>
@@ -72,11 +68,8 @@ export default function HomePage() {
     )
   }
 
-  if (!isAuthenticated) {
-    return null
-  }
-
   return (
+    <PageGuard requireAuth={true}>
     <main style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* ヘッダー */}
@@ -261,5 +254,6 @@ export default function HomePage() {
         </div>
       </div>
     </main>
+    </PageGuard>
   )
 }

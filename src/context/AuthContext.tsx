@@ -17,6 +17,7 @@ const authService: IAuthService = new MockAuthService()
 interface AuthContextType {
   user: AuthUser | null
   isAuthenticated: boolean
+  isLoggedIn: boolean // isAuthenticated のエイリアス（UI制御用）
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
@@ -57,12 +58,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const isAuthenticated = authService.isAuthenticated()
+  const isLoggedIn = isAuthenticated // UI制御用のエイリアス
 
   return (
     <AuthContext.Provider
       value={{
         user,
         isAuthenticated,
+        isLoggedIn,
         isLoading,
         login,
         logout,
