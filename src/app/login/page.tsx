@@ -10,7 +10,8 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const { login } = useAuth()
+  const [loginSucceeded, setLoginSucceeded] = useState(false)
+  const { login, isLoggedIn } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -22,26 +23,46 @@ function LoginForm() {
     }
   }, [searchParams])
 
+  // ログイン成功後、isLoggedIn が true になったらホームへ遷移
+  useEffect(() => {
+    if (!loginSucceeded) return
+
+    if (isLoggedIn) {
+      router.push('/home')
+      setLoginSucceeded(false)
+      setIsLoading(false)
+      return
+    }
+
+    // タイムアウト: 3秒以内に isLoggedIn が true にならない場合はエラー
+    const timeout = setTimeout(() => {
+      if (!isLoggedIn) {
+        setErrorMessage('ログイン状態の確認に失敗しました。再度お試しください。')
+        setLoginSucceeded(false)
+        setIsLoading(false)
+      }
+    }, 3000)
+
+    return () => clearTimeout(timeout)
+  }, [loginSucceeded, isLoggedIn, router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setErrorMessage(null)
     setMessage(null)
+    setLoginSucceeded(false)
 
-    let succeeded = false
     try {
       await login(email, password)
-      succeeded = true
+      // login() が成功したら、isLoggedIn が true になるのを useEffect で待つ
+      setLoginSucceeded(true)
     } catch (error) {
       console.error('Login failed:', error)
-      setErrorMessage('メールアドレスまたはパスワードが正しくありません。')
-    } finally {
+      const errorMsg = error instanceof Error ? error.message : 'メールアドレスまたはパスワードが正しくありません。'
+      setErrorMessage(errorMsg)
       setIsLoading(false)
     }
-
-    if (!succeeded) return
-    await new Promise((r) => setTimeout(r, 0))
-    router.push('/home')
   }
 
   return (

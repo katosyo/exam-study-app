@@ -56,6 +56,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     await authService.login(email, password)
     const currentUser = await authService.getCurrentUser()
+    if (!currentUser) {
+      throw new Error('ログインに成功しましたが、ユーザー情報の取得に失敗しました。')
+    }
     setUser(currentUser)
   }
 
