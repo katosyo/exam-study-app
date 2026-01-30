@@ -53,7 +53,7 @@ export default function DashboardPage() {
   // Dify チャットボットの埋め込み（問題回答ページのみ表示）
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const styleId = 'dify-chatbot-custom-style'
+    const styleId = 'study-site-dify-embed-style'
     if (!document.getElementById(styleId)) {
       const style = document.createElement('style')
       style.id = styleId
