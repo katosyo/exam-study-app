@@ -1,7 +1,5 @@
 /**
- * 認証関連の型定義
- * 
- * NOTE: 将来 Cognito に差し替えるため、インターフェースは本番想定で設計
+ * 認証関連の型定義（IAuthService は Cognito / 開発用フォールバックで実装）
  */
 
 export interface AuthUser {

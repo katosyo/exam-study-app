@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
+import { PageGuard } from '@/components/PageGuard'
 
 const inputStyle = {
   width: '100%',
@@ -21,7 +22,7 @@ const labelStyle = {
 }
 
 export default function ProfilePage() {
-  const { user, isAuthenticated, isLoading, updateProfile, changePassword } = useAuth()
+  const { user, isLoggedIn, isLoading, updateProfile, changePassword } = useAuth()
   const router = useRouter()
 
   const [displayName, setDisplayName] = useState('')
@@ -37,16 +38,12 @@ export default function ProfilePage() {
   const [passwordError, setPasswordError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/home')
-    }
-
     if (user) {
       setDisplayName(user.displayName)
       setEmail(user.email)
       setAvatarUrl(user.avatarUrl ?? '')
     }
-  }, [isLoading, isAuthenticated, user, router])
+  }, [user])
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -83,7 +80,7 @@ export default function ProfilePage() {
     }
   }
 
-  if (isLoading || !isAuthenticated) {
+  if (isLoading) {
     return (
       <main style={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <p>読み込み中...</p>
@@ -92,6 +89,7 @@ export default function ProfilePage() {
   }
 
   return (
+    <PageGuard requireAuth>
     <main style={{ minHeight: '100vh', background: '#f5f5f5', padding: '1rem 2rem' }}>
       <div
         style={{
@@ -275,5 +273,6 @@ export default function ProfilePage() {
         </form>
       </div>
     </main>
+    </PageGuard>
   )
 }

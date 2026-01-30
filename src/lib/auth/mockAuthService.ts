@@ -1,46 +1,38 @@
 /**
- * Mock 認証サービス
- * 
- * NOTE: 常に認証成功する仮実装
- * 将来 Cognito に差し替える際は、このファイルを CognitoAuthService に置き換える
+ * 開発用認証フォールバック
+ * Cognito 環境変数が未設定のときのみ使用。常にログイン成功、セッションはメモリのみ（リロードで解除）。
  */
 
 import { IAuthService, AuthTokens, AuthUser } from './types'
+import { setAuthToken } from './authToken'
 
 export class MockAuthService implements IAuthService {
-  private isLoggedIn = false
   private currentUser: AuthUser | null = null
 
   async login(email: string, password: string): Promise<AuthTokens> {
-    // Mock: 常に成功
-    this.isLoggedIn = true
     this.currentUser = {
-      userId: 'mock-user-id',
-      email: email,
-      displayName: 'Mock User',
+      userId: 'dev-user-id',
+      email,
+      displayName: email.split('@')[0] || 'User',
     }
-
-    // Mock トークンを返す
+    setAuthToken('dev-token')
     return {
-      accessToken: 'mock-access-token',
-      refreshToken: 'mock-refresh-token',
+      accessToken: 'dev-access-token',
+      refreshToken: 'dev-refresh-token',
     }
   }
 
   async logout(): Promise<void> {
-    // Mock: 状態をクリア
-    this.isLoggedIn = false
     this.currentUser = null
+    setAuthToken(null)
   }
 
   async getCurrentUser(): Promise<AuthUser | null> {
-    // Mock: ログイン中ならユーザー情報を返す
     return this.currentUser
   }
 
   isAuthenticated(): boolean {
-    // Mock: ログイン状態を返す
-    return this.isLoggedIn
+    return this.currentUser !== null
   }
 
   async updateProfile(updates: { displayName?: string; avatarUrl?: string }): Promise<void> {
@@ -50,6 +42,6 @@ export class MockAuthService implements IAuthService {
   }
 
   async changePassword(_currentPassword: string, _newPassword: string): Promise<void> {
-    // Mock: 常に成功
+    // 開発用: 何もしない
   }
 }

@@ -2,8 +2,8 @@
 
 /**
  * 認証コンテキスト
- * Cognito: NEXT_PUBLIC_COGNITO_USER_POOL_ID と NEXT_PUBLIC_COGNITO_CLIENT_ID が設定されている場合
- * 未設定時は Mock 認証
+ * 環境変数 NEXT_PUBLIC_COGNITO_USER_POOL_ID / NEXT_PUBLIC_COGNITO_CLIENT_ID が設定されていれば Cognito を使用。
+ * 未設定時は開発用フォールバック（ローカルでログイン可能、セッションはメモリのみ）。
  */
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'

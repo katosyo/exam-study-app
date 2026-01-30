@@ -225,7 +225,7 @@ export default function SignUpPage() {
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#999', fontSize: '0.9rem' }}>
-          Cognito 利用時は確認メール送信後にログインできます
+          登録後、確認メールが届く場合はリンクから本登録を完了してください。
         </p>
       </div>
     </main>

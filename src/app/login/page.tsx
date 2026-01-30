@@ -182,10 +182,6 @@ function LoginForm() {
             </button>
           </div>
         </form>
-
-        <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#999', fontSize: '0.9rem' }}>
-          NOTE: Mock認証（常にログイン成功）
-        </p>
       </div>
     </main>
   )
