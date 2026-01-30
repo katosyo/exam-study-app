@@ -22,7 +22,7 @@ declare global {
   }
 }
 
-const DIFY_CHATBOT_TOKEN = 'J5FFi8ONjqp79Pbq'
+const DIFY_CHATBOT_TOKEN = 'Z11LFp7Y14y4oHok'
 const DIFY_EMBED_URL = 'https://udify.app/embed.min.js'
 
 export default function DashboardPage() {
