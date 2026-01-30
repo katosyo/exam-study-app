@@ -144,9 +144,9 @@ export class CognitoAuthService implements IAuthService {
     if (attrs.length === 0) return
 
     return new Promise((resolve, reject) => {
-      user.updateAttributes(attrs, {
-        onSuccess: () => resolve(),
-        onFailure: (err) => reject(err),
+      user.updateAttributes(attrs, (err) => {
+        if (err) reject(err)
+        else resolve()
       })
     })
   }
