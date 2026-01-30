@@ -2,9 +2,9 @@
 
 /**
  * ページガードコンポーネント
- * 
+ *
  * ログイン必須のページで使用する
- * 非ログインユーザーはホーム画面にリダイレクト
+ * 非ログインユーザーはログイン画面にリダイレクト（ホームには戻れない）
  */
 
 import { useEffect } from 'react'
@@ -22,7 +22,7 @@ export function PageGuard({ children, requireAuth = true }: PageGuardProps) {
 
   useEffect(() => {
     if (!isLoading && requireAuth && !isLoggedIn) {
-      router.push('/home')
+      router.replace('/login')
     }
   }, [isLoading, isLoggedIn, requireAuth, router])
 

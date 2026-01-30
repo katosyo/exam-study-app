@@ -27,7 +27,7 @@ const DIFY_CHATBOT_TOKEN = 'Z11LFp7Y14y4oHok'
 const DIFY_EMBED_URL = 'https://udify.app/embed.min.js'
 
 export default function DashboardPage() {
-  const { user, isLoggedIn, isLoading, logout } = useAuth()
+  const { isLoggedIn, isLoading, logout } = useAuth()
   const { isBookmarked, toggleBookmark } = useBookmarks()
   const router = useRouter()
 
@@ -45,7 +45,7 @@ export default function DashboardPage() {
     handleSubmitAnswer,
     handleNext,
     handleRestart,
-  } = useQuiz()
+  } = useQuiz({ persistResults: isLoggedIn })
 
   const handleLogout = async () => {
     await logout()

@@ -9,26 +9,32 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { login } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
   useEffect(() => {
     const m = searchParams.get('message')
-    if (m === 'confirm_email') setMessage('確認メールを送りました。メール内のリンクで確認後、ログインしてください。')
+    if (m === 'confirm_email') {
+      setMessage('確認メールを送りました。メール内のリンクで確認後、ログインしてください。')
+      setErrorMessage(null)
+    }
   }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setErrorMessage(null)
 
     try {
-      // Mock: 常に成功
       await login(email, password)
-      router.push('/home') // ログイン後はホーム画面へ遷移
+      setMessage(null)
+      router.push('/home')
     } catch (error) {
       console.error('Login failed:', error)
       setMessage(null)
+      setErrorMessage('メールアドレスまたはパスワードが正しくありません。')
     } finally {
       setIsLoading(false)
     }
@@ -63,6 +69,21 @@ function LoginForm() {
             }}
           >
             {message}
+          </div>
+        )}
+        {errorMessage && (
+          <div
+            style={{
+              padding: '0.75rem',
+              background: '#fee2e2',
+              border: '1px solid #ef4444',
+              borderRadius: '4px',
+              color: '#991b1b',
+              marginBottom: '1rem',
+              fontSize: '0.9rem',
+            }}
+          >
+            {errorMessage}
           </div>
         )}
 

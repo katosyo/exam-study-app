@@ -10,8 +10,7 @@ export default function RootPage() {
 
   useEffect(() => {
     if (!isLoading) {
-      // ルートURLにアクセスしたら常にhomeにリダイレクト
-      router.push('/home')
+      router.replace('/home')
     }
   }, [isLoading, router])
 

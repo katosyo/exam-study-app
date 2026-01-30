@@ -1,14 +1,21 @@
 /**
  * クイズ状態管理 Hook
+ * persistResults: false のときは回答をAPIに送らずローカルで正誤のみ表示（未ログイン時用）
  */
 
 import { useState } from 'react'
 import { fetchQuestions, submitAnswer, SubmitAnswerResponse } from '@/lib/api/client'
-import type { ExamType, Question } from '@/types/question'
+import type { ExamType } from '@/types/question'
 
 type Stage = 'select' | 'loading' | 'quiz' | 'submitting' | 'complete'
 
-export function useQuiz() {
+export interface UseQuizOptions {
+  /** false の場合、回答をサーバーに送らず正誤のみ画面に表示する（結果は反映されない） */
+  persistResults?: boolean
+}
+
+export function useQuiz(options: UseQuizOptions = {}) {
+  const { persistResults = true } = options
   const [stage, setStage] = useState<Stage>('select')
   const [examType, setExamType] = useState<ExamType | null>(null)
   const [questions, setQuestions] = useState<Question[]>([])
@@ -48,6 +55,25 @@ export function useQuiz() {
     setStage('submitting')
 
     const currentQuestion = questions[currentIndex]
+
+    if (!persistResults) {
+      const isCorrect = selectedAnswer === currentQuestion.answerIndex
+      setAnswerResult({
+        isCorrect,
+        correctIndex: currentQuestion.answerIndex,
+        explanation: currentQuestion.explanation,
+        stats: {
+          correctCount: 0,
+          incorrectCount: 0,
+          proficiencyLevel: 'neutral',
+        },
+      })
+      setShowResult(true)
+      if (isCorrect) setScore((prev) => prev + 1)
+      setStage('quiz')
+      return
+    }
+
     const result = await submitAnswer({
       examType,
       questionId: currentQuestion.id,

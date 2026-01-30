@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
 import { getStatsSummary, ProficiencyLevel, StatsSummaryResponse } from '@/lib/api/client'
-import { PageGuard } from '@/components/PageGuard'
 import { LoadingSpinner } from '@/components/LoadingSpinner'
 import { ErrorWithRetry } from '@/components/ErrorWithRetry'
 import Link from 'next/link'
@@ -95,7 +94,6 @@ export default function HomePage() {
   }
 
   return (
-    <PageGuard requireAuth={false}>
     <main style={{ minHeight: '100vh', background: 'var(--bg-page)', padding: 'clamp(1rem, 4vw, 2rem)' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* ヘッダー */}
@@ -410,6 +408,5 @@ export default function HomePage() {
         </div>
       </div>
     </main>
-    </PageGuard>
   )
 }
