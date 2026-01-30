@@ -26,18 +26,22 @@ function LoginForm() {
     e.preventDefault()
     setIsLoading(true)
     setErrorMessage(null)
+    setMessage(null)
 
+    let succeeded = false
     try {
       await login(email, password)
-      setMessage(null)
-      router.push('/home')
+      succeeded = true
     } catch (error) {
       console.error('Login failed:', error)
-      setMessage(null)
       setErrorMessage('メールアドレスまたはパスワードが正しくありません。')
     } finally {
       setIsLoading(false)
     }
+
+    if (!succeeded) return
+    await new Promise((r) => setTimeout(r, 0))
+    router.push('/home')
   }
 
   return (

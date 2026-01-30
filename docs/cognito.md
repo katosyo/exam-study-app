@@ -60,3 +60,21 @@ NEXT_PUBLIC_API_URL=https://xxxxxxxxxx.execute-api.ap-northeast-1.amazonaws.com
 
 - User Pool Domain はテンプレートに含めていません。ホストUIを使う場合は Cognito コンソールでドメインを追加してください（リージョン内で一意の名前が必要）。
 - メール確認を無効にして即ログイン可能にしたい場合は、User Pool の「メッセージのカスタマイズ」や Pre Sign-up Lambda で自動確認するなどの対応が必要です。
+
+## ログイン後に 401 が出る場合
+
+「Failed to load resource: the server responded with a status of 401」は **認証エラー** です。次を確認してください。
+
+1. **NEXT_PUBLIC_API_URL が正しいか**
+   - 未設定や空だと、リクエストがフロントと同じオリジン（例: Amplify の URL）に飛び、API Gateway に届きません。デプロイ先の環境変数に SAM の `ApiEndpoint` をそのまま設定してください。
+
+2. **NEXT_PUBLIC_COGNITO_CLIENT_ID がバックエンドと一致しているか**
+   - フロントの Client ID と、SAM でデプロイした User Pool Client が同じである必要があります。JWT の `aud` と API Gateway のオーソライザー設定が一致しないと 401 になります。
+
+3. **どのリクエストが 401 か**
+   - ブラウザの開発者ツール → Network タブで、ステータス 401 のリクエストの URL を確認してください。
+   - `/stats/summary` や `/answers` など認証必須の API なら、上記 1・2 とトークン送信の有無を確認します。
+   - 別ドメイン（例: チャットボット用）の 401 の場合は、そのサービス側の設定を確認してください。
+
+4. **CORS**
+   - API Gateway の CORS で `Authorization` ヘッダーが許可されている必要があります（本テンプレートでは許可済み）。
