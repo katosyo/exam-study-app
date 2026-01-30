@@ -10,8 +10,8 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [loginSucceeded, setLoginSucceeded] = useState(false)
-  const { login, isLoggedIn } = useAuth()
+  const [pendingLogin, setPendingLogin] = useState(false)
+  const { login, isLoggedIn, user } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -23,45 +23,47 @@ function LoginForm() {
     }
   }, [searchParams])
 
-  // ログイン成功後、isLoggedIn が true になったらホームへ遷移
+  // ログイン成功後、user が設定されたらホームへリダイレクト
   useEffect(() => {
-    if (!loginSucceeded) return
-
-    if (isLoggedIn) {
-      router.push('/home')
-      setLoginSucceeded(false)
+    if (pendingLogin && user && isLoggedIn) {
+      setPendingLogin(false)
       setIsLoading(false)
-      return
+      router.push('/home')
     }
+  }, [pendingLogin, user, isLoggedIn, router])
 
-    // タイムアウト: 3秒以内に isLoggedIn が true にならない場合はエラー
+  // タイムアウト処理
+  useEffect(() => {
+    if (!pendingLogin) return
+
     const timeout = setTimeout(() => {
-      if (!isLoggedIn) {
+      if (pendingLogin && !user) {
         setErrorMessage('ログイン状態の確認に失敗しました。再度お試しください。')
-        setLoginSucceeded(false)
+        setPendingLogin(false)
         setIsLoading(false)
       }
     }, 3000)
 
     return () => clearTimeout(timeout)
-  }, [loginSucceeded, isLoggedIn, router])
+  }, [pendingLogin, user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setErrorMessage(null)
     setMessage(null)
-    setLoginSucceeded(false)
+    setPendingLogin(false)
 
     try {
       await login(email, password)
-      // login() が成功したら、isLoggedIn が true になるのを useEffect で待つ
-      setLoginSucceeded(true)
+      // login() が成功したら、user が設定されるのを useEffect で待つ
+      setPendingLogin(true)
     } catch (error) {
       console.error('Login failed:', error)
       const errorMsg = error instanceof Error ? error.message : 'メールアドレスまたはパスワードが正しくありません。'
       setErrorMessage(errorMsg)
       setIsLoading(false)
+      setPendingLogin(false)
     }
   }
 

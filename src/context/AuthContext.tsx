@@ -55,10 +55,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     await authService.login(email, password)
-    const currentUser = await authService.getCurrentUser()
+    
+    // ログイン成功後、ユーザー情報を取得
+    // Cognito のセッションが localStorage に保存されるまで待つ（最大2秒）
+    let attempts = 0
+    let currentUser: AuthUser | null = null
+    
+    while (attempts < 20 && !currentUser) {
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      currentUser = await authService.getCurrentUser()
+      attempts++
+    }
+    
     if (!currentUser) {
       throw new Error('ログインに成功しましたが、ユーザー情報の取得に失敗しました。')
     }
+    
     setUser(currentUser)
   }
 

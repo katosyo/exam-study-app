@@ -76,6 +76,8 @@ export class CognitoAuthService implements IAuthService {
           const accessToken = session.getAccessToken().getJwtToken()
           const refreshToken = session.getRefreshToken().getToken()
           setAuthToken(idToken)
+          
+          // セッションが確立されたので、すぐに resolve
           resolve({
             accessToken,
             refreshToken,
