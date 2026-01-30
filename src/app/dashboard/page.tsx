@@ -14,6 +14,10 @@ declare global {
       inputs?: Record<string, string>
       systemVariables?: Record<string, string>
       userVariables?: Record<string, string>
+      containerProps?: {
+        style?: Record<string, string | number>
+        className?: string
+      }
     }
   }
 }
@@ -49,11 +53,34 @@ export default function DashboardPage() {
   // Dify チャットボットの埋め込み（問題回答ページのみ表示）
   useEffect(() => {
     if (typeof window === 'undefined') return
+    const styleId = 'dify-chatbot-custom-style'
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style')
+      style.id = styleId
+      style.textContent = `
+        #dify-chatbot-bubble-button {
+          --dify-chatbot-bubble-button-bg-color: #1C64F2 !important;
+        }
+        #dify-chatbot-bubble-window {
+          width: 24rem !important;
+          height: 40rem !important;
+        }
+      `
+      document.head.appendChild(style)
+    }
     window.difyChatbotConfig = {
       token: DIFY_CHATBOT_TOKEN,
       inputs: {},
       systemVariables: {},
       userVariables: {},
+      containerProps: {
+        style: {
+          backgroundColor: '#1C64F2',
+          width: '50px',
+          height: '50px',
+          borderRadius: '25px',
+        },
+      },
     }
     if (document.getElementById(DIFY_CHATBOT_TOKEN)) return
     const script = document.createElement('script')
@@ -64,6 +91,8 @@ export default function DashboardPage() {
     return () => {
       const el = document.getElementById(DIFY_CHATBOT_TOKEN)
       if (el) el.remove()
+      const styleEl = document.getElementById(styleId)
+      if (styleEl) styleEl.remove()
     }
   }, [])
 
@@ -77,15 +106,6 @@ export default function DashboardPage() {
 
   return (
     <main style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem' }}>
-      {/* Dify チャットボット用スタイル */}
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            #dify-chatbot-bubble-button { background-color: #1C64F2 !important; }
-            #dify-chatbot-bubble-window { width: 24rem !important; height: 40rem !important; }
-          `,
-        }}
-      />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         {isLoggedIn ? (
           <button
