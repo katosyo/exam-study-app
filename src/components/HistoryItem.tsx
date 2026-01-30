@@ -12,6 +12,10 @@ interface HistoryItemProps {
   proficiencyLevel: ProficiencyLevel
   lastAnsweredAt: string
   onRetry: (questionId: string, examType: 'FE' | 'AP') => void
+  isBookmarked?: boolean
+  onToggleBookmark?: (questionId: string, examType: 'FE' | 'AP') => void
+  note?: string
+  onNoteChange?: (text: string) => void
 }
 
 const proficiencyLevelLabels: Record<ProficiencyLevel, string> = {
@@ -40,6 +44,10 @@ export function HistoryItem({
   proficiencyLevel,
   lastAnsweredAt,
   onRetry,
+  isBookmarked,
+  onToggleBookmark,
+  note,
+  onNoteChange,
 }: HistoryItemProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -95,24 +103,62 @@ export function HistoryItem({
           </div>
         </div>
 
-        <button
-          onClick={() => onRetry(questionId, examType)}
-          style={{
-            padding: '0.4rem 0.8rem',
-            background: '#0070f3',
-            color: 'white',
-            border: 'none',
-            borderRadius: '6px',
-            fontSize: '0.85rem',
-            cursor: 'pointer',
-            fontWeight: '600',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-          }}
-        >
-          もう一度解く
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+          {onToggleBookmark && (
+            <button
+              type="button"
+              onClick={() => onToggleBookmark(questionId, examType)}
+              title={isBookmarked ? 'ブックマーク解除' : 'ブックマーク'}
+              style={{
+                padding: '0.35rem',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '1.2rem',
+              }}
+            >
+              {isBookmarked ? '⭐' : '☆'}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => onRetry(questionId, examType)}
+            style={{
+              padding: '0.4rem 0.8rem',
+              background: '#0070f3',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              fontSize: '0.85rem',
+              cursor: 'pointer',
+              fontWeight: '600',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            もう一度解く
+          </button>
+        </div>
       </div>
+      {onNoteChange && (
+        <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #eee' }}>
+          <label style={{ fontSize: '0.75rem', color: '#666', display: 'block', marginBottom: '0.25rem' }}>メモ</label>
+          <textarea
+            value={note ?? ''}
+            onChange={(e) => onNoteChange(e.target.value)}
+            placeholder="メモを入力..."
+            rows={2}
+            style={{
+              width: '100%',
+              padding: '0.4rem',
+              border: '1px solid #ddd',
+              borderRadius: '4px',
+              fontSize: '0.85rem',
+              resize: 'vertical',
+              boxSizing: 'border-box',
+            }}
+          />
+        </div>
+      )}
     </div>
   )
 }

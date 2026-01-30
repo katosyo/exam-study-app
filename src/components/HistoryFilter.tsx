@@ -10,6 +10,8 @@ interface HistoryFilterProps {
   onCategoryChange: (category: string | null) => void
   onProficiencyLevelChange: (level: ProficiencyLevel | null) => void
   onExamTypeChange: (examType: 'FE' | 'AP' | null) => void
+  /** 苦手ページでは得意度フィルタを非表示 */
+  showProficiencyFilter?: boolean
 }
 
 const proficiencyLevelLabels: Record<ProficiencyLevel, string> = {
@@ -36,6 +38,7 @@ export function HistoryFilter({
   onCategoryChange,
   onProficiencyLevelChange,
   onExamTypeChange,
+  showProficiencyFilter = true,
 }: HistoryFilterProps) {
   return (
     <div
@@ -134,6 +137,7 @@ export function HistoryFilter({
         </div>
 
         {/* 得意度フィルタ */}
+        {showProficiencyFilter && (
         <div>
           <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#666' }}>
             得意度
@@ -174,6 +178,7 @@ export function HistoryFilter({
             ))}
           </div>
         </div>
+        )}
       </div>
     </div>
   )

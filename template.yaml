@@ -2,6 +2,13 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Exam Study App Backend
 
+Parameters:
+  CognitoAutoConfirm:
+    Type: String
+    Default: 'true'
+    AllowedValues: ['true', 'false']
+    Description: メール確認をスキップして即時サインアップ可能にする（開発用）
+
 Globals:
   Function:
     Timeout: 10
@@ -11,6 +18,67 @@ Globals:
       - arm64
 
 Resources:
+  # Cognito User Pool
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub '${AWS::StackName}-UserPool'
+      UsernameAttributes:
+        - email
+      AutoVerifiedAttributes:
+        - email
+      Schema:
+        - Name: email
+          Required: true
+          Mutable: false
+        - Name: preferred_username
+          Required: false
+          Mutable: true
+        - Name: picture
+          Required: false
+          Mutable: true
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireUppercase: true
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+      UserAttributeUpdateSettings:
+        AttributesRequireVerificationBeforeUpdate:
+          - email
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      UserPoolId: !Ref UserPool
+      ClientName: !Sub '${AWS::StackName}-WebClient'
+      GenerateSecret: false
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_SRP_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      SupportedIdentityProviders:
+        - COGNITO
+      TokenValidityUnits:
+        AccessToken: hours
+        IdToken: hours
+        RefreshToken: days
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      RefreshTokenValidity: 30
+      PreventUserExistenceErrors: ENABLED
+
+  UserPoolDomain:
+    Type: AWS::Cognito::UserPoolDomain
+    Properties:
+      Domain: !Sub '${AWS::StackName}-${AWS::AccountId}'
+      UserPoolId: !Ref UserPool
+
   # DynamoDB テーブル
   QuestionsTable:
     Type: AWS::DynamoDB::Table
@@ -135,6 +203,8 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /answers
             Method: POST
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   GetStatsSummaryFunction:
     Type: AWS::Serverless::Function
@@ -160,6 +230,8 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /stats/summary
             Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   GetHistoryQuestionsFunction:
     Type: AWS::Serverless::Function
@@ -182,11 +254,21 @@ Resources:
             ApiId: !Ref HttpApi
             Path: /history/questions
             Method: GET
+            Auth:
+              Authorizer: CognitoAuthorizer
 
   # HTTP API
   HttpApi:
     Type: AWS::Serverless::HttpApi
     Properties:
+      Auth:
+        Authorizers:
+          CognitoAuthorizer:
+            IdentitySource: $request.header.Authorization
+            JwtConfiguration:
+              issuer: !Sub 'https://cognito-idp.${AWS::Region}.amazonaws.com/${UserPool}'
+              audience:
+                - !Ref UserPoolClient
       CorsConfiguration:
         AllowOrigins:
           - '*'
@@ -196,12 +278,25 @@ Resources:
           - OPTIONS
         AllowHeaders:
           - Content-Type
+          - Authorization
         MaxAge: 3600
 
 Outputs:
   ApiEndpoint:
     Description: API Gateway endpoint URL
     Value: !Sub 'https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com'
+
+  UserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref UserPool
+
+  UserPoolClientId:
+    Description: Cognito User Pool Client ID (for frontend)
+    Value: !Ref UserPoolClient
+
+  UserPoolRegion:
+    Description: AWS Region for Cognito
+    Value: !Ref AWS::Region
 
   QuestionsTableName:
     Description: DynamoDB Questions table name

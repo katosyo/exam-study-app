@@ -20,6 +20,7 @@ export interface StatsSummaryOutput {
   lastStudiedAt: string | null // 直近学習日時（ISO 8601）
   totalQuestions: number // 全問題数
   answeredQuestions: number // 回答済み問題数
+  todayAnsweredCount: number // 今日回答した問題数（重複除く）
 }
 
 export class GetStatsSummaryService {
@@ -75,6 +76,9 @@ export class GetStatsSummaryService {
       // 7. 直近学習日時を取得
       const lastStudiedAt = history.length > 0 ? history[0].answeredAt : null
 
+      // 8. 今日回答した問題数（重複除く）
+      const todayAnsweredCount = this.countTodayAnswered(history)
+
       return success({
         answeredRatio,
         consecutiveDays,
@@ -82,6 +86,7 @@ export class GetStatsSummaryService {
         lastStudiedAt,
         totalQuestions,
         answeredQuestions,
+        todayAnsweredCount,
       })
     } catch (error) {
       console.error('Failed to get stats summary:', error)
@@ -90,6 +95,24 @@ export class GetStatsSummaryService {
         'Failed to get stats summary'
       )
     }
+  }
+
+  /**
+   * 今日（UTC）回答した問題のユニーク数を返す
+   */
+  private countTodayAnswered(
+    history: Array<{ answeredAt: string; questionId: string; examType: string }>
+  ): number {
+    const today = new Date()
+    const todayStr = today.toISOString().split('T')[0]
+    const seen = new Set<string>()
+    for (const item of history) {
+      const dateStr = new Date(item.answeredAt).toISOString().split('T')[0]
+      if (dateStr === todayStr) {
+        seen.add(`${item.examType}#${item.questionId}`)
+      }
+    }
+    return seen.size
   }
 
   /**

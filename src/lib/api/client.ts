@@ -1,10 +1,20 @@
 /**
  * API Client
+ * Cognito 利用時は getAuthToken() で Id トークンを取得し Authorization ヘッダーに付与
  */
 
 import type { ExamType, GetQuestionsResponse, ApiError } from '@/types/question'
+import { getAuthToken } from '@/lib/auth/authToken'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''
+
+function authHeaders(): HeadersInit {
+  const token = getAuthToken()
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
 
 export type ApiResult<T> =
   | { ok: true; data: T }
@@ -43,6 +53,7 @@ export interface StatsSummaryResponse {
     lastStudiedAt: string | null
     totalQuestions: number
     answeredQuestions: number
+    todayAnsweredCount?: number
   }
 }
 
@@ -73,10 +84,8 @@ export async function fetchQuestions(
   limit: number
 ): Promise<ApiResult<GetQuestionsResponse>> {
   try {
-    // NOTE: Mock認証では Authorization ヘッダーは不要
-    // 将来 Cognito 導入時に Authorization ヘッダーを追加
     const url = `${API_BASE_URL}/questions?exam=${examType}&limit=${limit}`
-    const response = await fetch(url)
+    const response = await fetch(url, { headers: authHeaders() })
 
     if (!response.ok) {
       const error = await response.json()
@@ -110,9 +119,7 @@ export async function submitAnswer(
     const url = `${API_BASE_URL}/answers`
     const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: authHeaders(),
       body: JSON.stringify(request),
     })
 
@@ -144,7 +151,7 @@ export async function submitAnswer(
 export async function getStatsSummary(): Promise<ApiResult<StatsSummaryResponse>> {
   try {
     const url = `${API_BASE_URL}/stats/summary`
-    const response = await fetch(url)
+    const response = await fetch(url, { headers: authHeaders() })
 
     if (!response.ok) {
       const error = await response.json()
@@ -188,7 +195,7 @@ export async function getHistoryQuestions(
 
     const queryString = queryParams.toString()
     const url = `${API_BASE_URL}/history/questions${queryString ? `?${queryString}` : ''}`
-    const response = await fetch(url)
+    const response = await fetch(url, { headers: authHeaders() })
 
     if (!response.ok) {
       const error = await response.json()

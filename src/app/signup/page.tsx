@@ -11,20 +11,18 @@ export default function SignUpPage() {
   const [displayName, setDisplayName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
-  const { login } = useAuth()
+  const { signUp } = useAuth()
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
-    // パスワード確認
     if (password !== confirmPassword) {
       setError('パスワードが一致しません')
       return
     }
 
-    // パスワードの長さチェック
     if (password.length < 8) {
       setError('パスワードは8文字以上で入力してください')
       return
@@ -33,13 +31,20 @@ export default function SignUpPage() {
     setIsLoading(true)
 
     try {
-      // NOTE: Mock認証 - 常に成功
-      // 実際の登録処理の代わりに、直接ログイン処理を実行
-      await login(email, password)
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Signup failed:', error)
-      setError('登録に失敗しました')
+      const result = await signUp(email, password, displayName || undefined)
+      if (result.needsEmailVerification) {
+        setError('')
+        router.push('/login?message=confirm_email')
+        return
+      }
+      router.push('/home')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : '登録に失敗しました'
+      if (typeof msg === 'string' && msg.includes('UsernameExistsException')) {
+        setError('このメールアドレスは既に登録されています')
+      } else {
+        setError(msg)
+      }
     } finally {
       setIsLoading(false)
     }
@@ -220,7 +225,7 @@ export default function SignUpPage() {
         </form>
 
         <p style={{ textAlign: 'center', marginTop: '1.5rem', color: '#999', fontSize: '0.9rem' }}>
-          NOTE: Mock認証（常に登録成功）
+          Cognito 利用時は確認メール送信後にログインできます
         </p>
       </div>
     </main>

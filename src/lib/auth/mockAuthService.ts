@@ -42,4 +42,14 @@ export class MockAuthService implements IAuthService {
     // Mock: ログイン状態を返す
     return this.isLoggedIn
   }
+
+  async updateProfile(updates: { displayName?: string; avatarUrl?: string }): Promise<void> {
+    if (!this.currentUser) return
+    if (updates.displayName !== undefined) this.currentUser.displayName = updates.displayName
+    if (updates.avatarUrl !== undefined) this.currentUser.avatarUrl = updates.avatarUrl
+  }
+
+  async changePassword(_currentPassword: string, _newPassword: string): Promise<void> {
+    // Mock: 常に成功
+  }
 }

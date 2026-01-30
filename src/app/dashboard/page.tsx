@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext'
 import { ExamSelector } from '@/components/ExamSelector'
 import { QuestionCard } from '@/components/QuestionCard'
 import { useQuiz } from '@/hooks/useQuiz'
+import { useBookmarks } from '@/hooks/useBookmarks'
 
 declare global {
   interface Window {
@@ -27,6 +28,7 @@ const DIFY_EMBED_URL = 'https://udify.app/embed.min.js'
 
 export default function DashboardPage() {
   const { user, isLoggedIn, isLoading, logout } = useAuth()
+  const { isBookmarked, toggleBookmark } = useBookmarks()
   const router = useRouter()
 
   const {
@@ -50,7 +52,7 @@ export default function DashboardPage() {
     router.push('/login')
   }
 
-  // Dify チャットボットの埋め込み（問題回答ページのみ表示）
+  // Dify チャットボットの埋め込み（初回のみスクリプト読み込み）
   useEffect(() => {
     if (typeof window === 'undefined') return
     const styleId = 'study-site-dify-embed-style'
@@ -95,6 +97,14 @@ export default function DashboardPage() {
       if (styleEl) styleEl.remove()
     }
   }, [])
+
+  // 現在表示中の問題をチャットボットの inputs に渡す（Dify の Start ノードで current_question 変数を使う場合）
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.difyChatbotConfig) return
+    const currentQuestion = stage === 'quiz' && questions[currentIndex] ? questions[currentIndex] : null
+    const questionText = currentQuestion ? (currentQuestion.text.length > 500 ? currentQuestion.text.slice(0, 500) + '...' : currentQuestion.text) : ''
+    window.difyChatbotConfig.inputs = questionText ? { current_question: questionText } : {}
+  }, [stage, questions, currentIndex])
 
   if (isLoading) {
     return (
@@ -253,6 +263,8 @@ export default function DashboardPage() {
             onSubmitAnswer={handleSubmitAnswer}
             showResult={showResult}
             answerResult={answerResult}
+            isBookmarked={isBookmarked(questions[currentIndex].id, questions[currentIndex].examType)}
+            onToggleBookmark={toggleBookmark}
           />
           {showResult && (
             <div style={{ textAlign: 'center', marginTop: '1rem' }}>

@@ -1,15 +1,22 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
   const { login } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    const m = searchParams.get('message')
+    if (m === 'confirm_email') setMessage('確認メールを送りました。メール内のリンクで確認後、ログインしてください。')
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,6 +28,7 @@ export default function LoginPage() {
       router.push('/home') // ログイン後はホーム画面へ遷移
     } catch (error) {
       console.error('Login failed:', error)
+      setMessage(null)
     } finally {
       setIsLoading(false)
     }
@@ -41,6 +49,22 @@ export default function LoginPage() {
         <h1 style={{ textAlign: 'center', marginBottom: '2rem', color: '#333' }}>
           🎓 ログイン
         </h1>
+
+        {message && (
+          <div
+            style={{
+              padding: '0.75rem',
+              background: '#d1fae5',
+              border: '1px solid #10b981',
+              borderRadius: '4px',
+              color: '#065f46',
+              marginBottom: '1rem',
+              fontSize: '0.9rem',
+            }}
+          >
+            {message}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div style={{ marginBottom: '1rem' }}>

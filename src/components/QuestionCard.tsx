@@ -12,6 +12,8 @@ interface QuestionCardProps {
   onSubmitAnswer: () => void
   showResult: boolean
   answerResult?: SubmitAnswerResponse['result'] | null
+  isBookmarked?: boolean
+  onToggleBookmark?: (questionId: string, examType: 'FE' | 'AP') => void
 }
 
 const proficiencyLevelLabels = {
@@ -39,6 +41,8 @@ export function QuestionCard({
   onSubmitAnswer,
   showResult,
   answerResult,
+  isBookmarked,
+  onToggleBookmark,
 }: QuestionCardProps) {
   const isCorrect = answerResult?.isCorrect ?? (selectedAnswer === question.answerIndex)
 
@@ -48,7 +52,19 @@ export function QuestionCard({
         <span className="progress">
           {currentIndex + 1} / {totalCount}
         </span>
-        <span className="category">{question.category || '一般'}</span>
+        <div className="header-right">
+          {onToggleBookmark && (
+            <button
+              type="button"
+              className="bookmark-btn"
+              onClick={() => onToggleBookmark(question.id, question.examType)}
+              title={isBookmarked ? 'ブックマーク解除' : 'ブックマーク'}
+            >
+              {isBookmarked ? '⭐' : '☆'}
+            </button>
+          )}
+          <span className="category">{question.category || '一般'}</span>
+        </div>
       </div>
 
       <h3 className="question-text">{question.text}</h3>
@@ -130,9 +146,22 @@ export function QuestionCard({
         .header {
           display: flex;
           justify-content: space-between;
+          align-items: center;
           margin-bottom: 1.5rem;
           font-size: 0.9rem;
           color: #666;
+        }
+        .header-right {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        .bookmark-btn {
+          padding: 0.25rem;
+          background: none;
+          border: none;
+          cursor: pointer;
+          font-size: 1.2rem;
         }
         .question-text {
           margin-bottom: 1.5rem;

@@ -7,11 +7,15 @@ import { PageGuard } from '@/components/PageGuard'
 import { HistoryFilter } from '@/components/HistoryFilter'
 import { HistoryItem } from '@/components/HistoryItem'
 import { EmptyState } from '@/components/EmptyState'
+import { LoadingSpinner } from '@/components/LoadingSpinner'
+import { ErrorWithRetry } from '@/components/ErrorWithRetry'
 import { getHistoryQuestions, ProficiencyLevel } from '@/lib/api/client'
 import type { ExamType } from '@/types/question'
+import { useBookmarks } from '@/hooks/useBookmarks'
 
 export default function HistoryPage() {
   const { isLoggedIn, logout } = useAuth()
+  const { isBookmarked, toggleBookmark, getNote, setNote } = useBookmarks()
   const router = useRouter()
   const [items, setItems] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -127,24 +131,11 @@ export default function HistoryPage() {
           </div>
 
           {error && (
-            <div
-              style={{
-                padding: '1rem',
-                background: '#fee2e2',
-                border: '1px solid #ef4444',
-                borderRadius: '8px',
-                marginBottom: '2rem',
-                color: '#991b1b',
-              }}
-            >
-              <p>エラー: {error}</p>
-            </div>
+            <ErrorWithRetry message={error} onRetry={loadHistory} />
           )}
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '4rem' }}>
-              <p>読み込み中...</p>
-            </div>
+            <LoadingSpinner message="読み込み中..." />
           ) : (
             <>
               <HistoryFilter
@@ -166,7 +157,7 @@ export default function HistoryPage() {
                   </div>
                   {items.map((item) => (
                     <HistoryItem
-                      key={item.questionId}
+                      key={`${item.examType}-${item.questionId}`}
                       questionId={item.questionId}
                       questionText={item.questionText}
                       examType={item.examType}
@@ -176,6 +167,10 @@ export default function HistoryPage() {
                       proficiencyLevel={item.proficiencyLevel}
                       lastAnsweredAt={item.lastAnsweredAt}
                       onRetry={handleRetry}
+                      isBookmarked={isBookmarked(item.questionId, item.examType)}
+                      onToggleBookmark={toggleBookmark}
+                      note={getNote(item.examType, item.questionId)}
+                      onNoteChange={(text) => setNote(item.examType, item.questionId, text)}
                     />
                   ))}
                 </div>

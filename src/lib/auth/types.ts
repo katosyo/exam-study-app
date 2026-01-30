@@ -8,6 +8,7 @@ export interface AuthUser {
   userId: string
   email: string
   displayName: string
+  avatarUrl?: string
 }
 
 export interface AuthTokens {
@@ -35,4 +36,19 @@ export interface IAuthService {
    * 認証状態を確認
    */
   isAuthenticated(): boolean
+
+  /**
+   * プロフィール更新（表示名・アバターURL）
+   */
+  updateProfile?(updates: { displayName?: string; avatarUrl?: string }): Promise<void>
+
+  /**
+   * パスワード変更
+   */
+  changePassword?(currentPassword: string, newPassword: string): Promise<void>
+
+  /**
+   * 新規登録（Cognito 時のみ）
+   */
+  signUp?(email: string, password: string, displayName?: string): Promise<void>
 }

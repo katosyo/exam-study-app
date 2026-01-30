@@ -8,6 +8,7 @@ import { QuestionStatsRepository } from '../../repositories/questionStatsReposit
 import { GetHistoryQuestionsService } from './service'
 import { getHttpStatus } from '../../shared/errors'
 import { ProficiencyLevel } from '../../domain/questionStats'
+import { getUserIdFromEvent } from '../../shared/auth'
 
 const questionsTableName = process.env.QUESTIONS_TABLE_NAME || ''
 const questionStatsTableName = process.env.QUESTION_STATS_TABLE_NAME || ''
@@ -25,8 +26,7 @@ export async function handler(
 ): Promise<APIGatewayProxyResult> {
   console.log('Event:', JSON.stringify(event))
 
-  // NOTE: Mock認証 - 将来 Cognito JWT から取得
-  const userId = 'mock-user-id'
+  const userId = getUserIdFromEvent(event)
   console.log('UserId:', userId)
 
   try {
@@ -83,6 +83,6 @@ function corsHeaders() {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET,OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   }
 }

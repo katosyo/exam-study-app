@@ -1,0 +1,43 @@
+# フロントエンドのビルド検証（main のフロント変更時）
+# Vercel / Amplify にデプロイする場合は、各ホスティングの連携または以下の手動デプロイを利用
+name: Build Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'next.config.js'
+      - 'tsconfig.json'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ vars.NEXT_PUBLIC_API_URL || 'https://placeholder.execute-api.ap-northeast-1.amazonaws.com' }}
+
+      - name: Summary
+        run: |
+          echo "✅ Frontend build succeeded"
+          echo "Deploy to Amplify: connect this repo in AWS Amplify Console (amplify.yml is present)"
+          echo "Deploy to Vercel: connect this repo in Vercel or add Vercel deploy step with VERCEL_TOKEN"
