@@ -156,9 +156,9 @@ export class CognitoAuthService implements IAuthService {
     if (!user) throw new Error('Not authenticated')
 
     return new Promise((resolve, reject) => {
-      user.changePassword(currentPassword, newPassword, {
-        onSuccess: () => resolve(),
-        onFailure: (err) => reject(err),
+      user.changePassword(currentPassword, newPassword, (err) => {
+        if (err) reject(err)
+        else resolve()
       })
     })
   }
