@@ -7,6 +7,20 @@ import { ExamSelector } from '@/components/ExamSelector'
 import { QuestionCard } from '@/components/QuestionCard'
 import { useQuiz } from '@/hooks/useQuiz'
 
+declare global {
+  interface Window {
+    difyChatbotConfig?: {
+      token: string
+      inputs?: Record<string, string>
+      systemVariables?: Record<string, string>
+      userVariables?: Record<string, string>
+    }
+  }
+}
+
+const DIFY_CHATBOT_TOKEN = 'J5FFi8ONjqp79Pbq'
+const DIFY_EMBED_URL = 'https://udify.app/embed.min.js'
+
 export default function DashboardPage() {
   const { user, isLoggedIn, isLoading, logout } = useAuth()
   const router = useRouter()
@@ -32,6 +46,27 @@ export default function DashboardPage() {
     router.push('/login')
   }
 
+  // Dify チャットボットの埋め込み（問題回答ページのみ表示）
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.difyChatbotConfig = {
+      token: DIFY_CHATBOT_TOKEN,
+      inputs: {},
+      systemVariables: {},
+      userVariables: {},
+    }
+    if (document.getElementById(DIFY_CHATBOT_TOKEN)) return
+    const script = document.createElement('script')
+    script.src = DIFY_EMBED_URL
+    script.id = DIFY_CHATBOT_TOKEN
+    script.defer = true
+    document.body.appendChild(script)
+    return () => {
+      const el = document.getElementById(DIFY_CHATBOT_TOKEN)
+      if (el) el.remove()
+    }
+  }, [])
+
   if (isLoading) {
     return (
       <main style={{ minHeight: '100vh', background: '#f5f5f5', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -42,6 +77,15 @@ export default function DashboardPage() {
 
   return (
     <main style={{ minHeight: '100vh', background: '#f5f5f5', padding: '2rem' }}>
+      {/* Dify チャットボット用スタイル */}
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            #dify-chatbot-bubble-button { background-color: #1C64F2 !important; }
+            #dify-chatbot-bubble-window { width: 24rem !important; height: 40rem !important; }
+          `,
+        }}
+      />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         {isLoggedIn ? (
           <button
