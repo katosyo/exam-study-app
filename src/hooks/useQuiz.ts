@@ -5,7 +5,7 @@
 
 import { useState } from 'react'
 import { fetchQuestions, submitAnswer, SubmitAnswerResponse } from '@/lib/api/client'
-import type { ExamType } from '@/types/question'
+import type { ExamType, Question } from '@/types/question'
 
 type Stage = 'select' | 'loading' | 'quiz' | 'submitting' | 'complete'
 
