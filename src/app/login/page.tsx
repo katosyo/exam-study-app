@@ -34,7 +34,35 @@ function LoginForm() {
       router.push('/home')
     } catch (error) {
       console.error('Login failed:', error)
-      const errorMsg = error instanceof Error ? error.message : 'メールアドレスまたはパスワードが正しくありません。'
+      
+      // Cognito のエラーオブジェクトからメッセージを抽出
+      let errorMsg = 'メールアドレスまたはパスワードが正しくありません。'
+      
+      if (error instanceof Error) {
+        errorMsg = error.message
+      } else if (error && typeof error === 'object') {
+        // Cognito のエラーオブジェクト（code と message を持つ）
+        const cognitoError = error as { code?: string; message?: string; name?: string }
+        if (cognitoError.message) {
+          errorMsg = cognitoError.message
+        } else if (cognitoError.code) {
+          // エラーコードに応じたメッセージ
+          switch (cognitoError.code) {
+            case 'UserNotFoundException':
+              errorMsg = 'このメールアドレスは登録されていません。'
+              break
+            case 'NotAuthorizedException':
+              errorMsg = 'メールアドレスまたはパスワードが正しくありません。'
+              break
+            case 'UserNotConfirmedException':
+              errorMsg = 'メールアドレスの確認が完了していません。確認メールをご確認ください。'
+              break
+            default:
+              errorMsg = cognitoError.message || 'ログインに失敗しました。'
+          }
+        }
+      }
+      
       setErrorMessage(errorMsg)
       setIsLoading(false)
     }
