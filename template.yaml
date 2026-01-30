@@ -29,12 +29,15 @@ Resources:
         - email
       Schema:
         - Name: email
+          AttributeDataType: String
           Required: true
           Mutable: false
         - Name: preferred_username
+          AttributeDataType: String
           Required: false
           Mutable: true
         - Name: picture
+          AttributeDataType: String
           Required: false
           Mutable: true
       Policies:
@@ -73,11 +76,8 @@ Resources:
       RefreshTokenValidity: 30
       PreventUserExistenceErrors: ENABLED
 
-  UserPoolDomain:
-    Type: AWS::Cognito::UserPoolDomain
-    Properties:
-      Domain: !Sub '${AWS::StackName}-${AWS::AccountId}'
-      UserPoolId: !Ref UserPool
+  # User Pool Domain はリージョン内で一意のため、必要ならコンソールで手動追加
+  # （Hosted UI を使う場合のみ。アプリから直接 authenticateUser する場合は不要）
 
   # DynamoDB テーブル
   QuestionsTable:

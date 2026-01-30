@@ -10,7 +10,7 @@
 1. `sam build && sam deploy` でデプロイすると以下が作成されます。
    - **Cognito User Pool**（メールアドレスをユーザー名、preferred_username / picture を属性）
    - **User Pool Client**（クライアントシークレットなし、USER_PASSWORD_AUTH / USER_SRP_AUTH / REFRESH_TOKEN）
-   - **User Pool Domain**（ホストUI用。必要に応じて利用）
+   - User Pool Domain はテンプレートに含めていません（リージョン内で一意のため競合しやすい）。Hosted UI を使う場合はコンソールで手動追加してください。
    - **HttpApi** の JWT オーソライザー（Cognito の issuer / audience を指定）
 
 2. 認証が必要な API:
@@ -58,5 +58,5 @@ NEXT_PUBLIC_API_URL=https://xxxxxxxxxx.execute-api.ap-northeast-1.amazonaws.com
 
 ## 注意
 
-- User Pool Domain はテンプレートで `{StackName}-{AccountId}` として作成しています。ホストUIを使う場合はこのドメインを利用するか、必要に応じて変更してください。
+- User Pool Domain はテンプレートに含めていません。ホストUIを使う場合は Cognito コンソールでドメインを追加してください（リージョン内で一意の名前が必要）。
 - メール確認を無効にして即ログイン可能にしたい場合は、User Pool の「メッセージのカスタマイズ」や Pre Sign-up Lambda で自動確認するなどの対応が必要です。
