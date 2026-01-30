@@ -10,8 +10,7 @@ function LoginForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [pendingLogin, setPendingLogin] = useState(false)
-  const { login, isLoggedIn, user } = useAuth()
+  const { login } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -23,47 +22,21 @@ function LoginForm() {
     }
   }, [searchParams])
 
-  // ログイン成功後、user が設定されたらホームへリダイレクト
-  useEffect(() => {
-    if (pendingLogin && user && isLoggedIn) {
-      setPendingLogin(false)
-      setIsLoading(false)
-      router.push('/home')
-    }
-  }, [pendingLogin, user, isLoggedIn, router])
-
-  // タイムアウト処理
-  useEffect(() => {
-    if (!pendingLogin) return
-
-    const timeout = setTimeout(() => {
-      if (pendingLogin && !user) {
-        setErrorMessage('ログイン状態の確認に失敗しました。再度お試しください。')
-        setPendingLogin(false)
-        setIsLoading(false)
-      }
-    }, 3000)
-
-    return () => clearTimeout(timeout)
-  }, [pendingLogin, user])
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setErrorMessage(null)
     setMessage(null)
-    setPendingLogin(false)
 
     try {
       await login(email, password)
-      // login() が成功したら、user が設定されるのを useEffect で待つ
-      setPendingLogin(true)
+      // login() が成功したら即ホームへ遷移
+      router.push('/home')
     } catch (error) {
       console.error('Login failed:', error)
       const errorMsg = error instanceof Error ? error.message : 'メールアドレスまたはパスワードが正しくありません。'
       setErrorMessage(errorMsg)
       setIsLoading(false)
-      setPendingLogin(false)
     }
   }
 

@@ -6,7 +6,7 @@
  * 未設定時は開発用フォールバック（ローカルでログイン可能、セッションはメモリのみ）。
  */
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react'
 import { IAuthService, AuthUser } from '@/lib/auth/types'
 import { MockAuthService } from '@/lib/auth/mockAuthService'
 import { CognitoAuthService } from '@/lib/auth/cognitoAuthService'
@@ -35,45 +35,48 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const syncIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
-  // 初回ロード時にユーザー情報を取得
+  // ユーザー状態の同期（初回ロード + 定期的なチェック）
   useEffect(() => {
-    const loadUser = async () => {
+    const syncUser = async () => {
       try {
         const currentUser = await authService.getCurrentUser()
         setUser(currentUser)
       } catch (error) {
-        console.error('Failed to load user:', error)
+        console.error('Failed to sync user:', error)
         setUser(null)
-      } finally {
-        setIsLoading(false)
       }
     }
 
-    loadUser()
+    // 初回ロード
+    syncUser().finally(() => setIsLoading(false))
+
+    // 定期的な同期（5秒ごと）
+    syncIntervalRef.current = setInterval(syncUser, 5000)
+
+    // ウィンドウフォーカス時に同期
+    const handleFocus = () => {
+      syncUser()
+    }
+    window.addEventListener('focus', handleFocus)
+
+    return () => {
+      if (syncIntervalRef.current) {
+        clearInterval(syncIntervalRef.current)
+      }
+      window.removeEventListener('focus', handleFocus)
+    }
   }, [])
 
+  // login: 認証成功/失敗のみを責務とする
   const login = async (email: string, password: string) => {
     await authService.login(email, password)
-    
-    // ログイン成功後、ユーザー情報を取得
-    // Cognito のセッションが localStorage に保存されるまで待つ（最大2秒）
-    let attempts = 0
-    let currentUser: AuthUser | null = null
-    
-    while (attempts < 20 && !currentUser) {
-      await new Promise((resolve) => setTimeout(resolve, 100))
-      currentUser = await authService.getCurrentUser()
-      attempts++
-    }
-    
-    if (!currentUser) {
-      throw new Error('ログインに成功しましたが、ユーザー情報の取得に失敗しました。')
-    }
-    
-    setUser(currentUser)
+    // 認証成功後、次の同期サイクルでuserが更新される
+    // 明示的なuser取得は行わない
   }
 
+  // logout: 認証解除とuserクリア
   const logout = async () => {
     await authService.logout()
     setUser(null)
@@ -82,8 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = async (updates: { displayName?: string; avatarUrl?: string }) => {
     if (!authService.updateProfile) return
     await authService.updateProfile(updates)
-    const currentUser = await authService.getCurrentUser()
-    setUser(currentUser)
+    // プロフィール更新後、次の同期サイクルでuserが更新される
+    // 明示的なuser取得は行わない
   }
 
   const changePassword = async (currentPassword: string, newPassword: string) => {
@@ -96,9 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authService.signUp(email, password, displayName)
       return { needsEmailVerification: true }
     }
+    // Mock認証時は即ログイン
     await authService.login(email, password)
-    const currentUser = await authService.getCurrentUser()
-    setUser(currentUser)
     return { needsEmailVerification: false }
   }
 
